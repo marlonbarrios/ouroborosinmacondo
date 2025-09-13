@@ -1225,7 +1225,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (osc && osc.frequency) {
             osc.frequency.setValueAtTime(baseFreq, Tone.now());
-            osc.volume.setValueAtTime(-12 + (maxAmp * 12), Tone.now());
+            let volume = p.constrain(-12 + (maxAmp * 12), -60, 0); // Constrain volume to safe range
+            osc.volume.setValueAtTime(volume, Tone.now());
           }
         }
 
@@ -1243,7 +1244,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (osc && osc.frequency) {
             osc.frequency.setValueAtTime(notes[noteIndex], Tone.now());
-            osc.volume.setValueAtTime(-15 + (rhythm * 3), Tone.now());
+            let volume = p.constrain(-15 + (rhythm * 3), -60, 0); // Constrain volume to safe range
+            osc.volume.setValueAtTime(volume, Tone.now());
           }
         }
 
@@ -1260,7 +1262,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             
             if (clickOsc && clickOsc.frequency) {
               clickOsc.frequency.setValueAtTime(freq, Tone.now());
-              clickOsc.volume.setValueAtTime(-20 + (intensity * 8), Tone.now());
+              let volume = p.constrain(-20 + (intensity * 8), -60, 0); // Constrain volume to safe range
+              clickOsc.volume.setValueAtTime(volume, Tone.now());
             }
           }
         }
@@ -1275,7 +1278,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (squeakOsc && squeakOsc.frequency) {
             squeakOsc.frequency.setValueAtTime(freq + p.sin(p.frameCount * 0.1) * 20, Tone.now());
-            squeakOsc.volume.setValueAtTime(-18 + (grain * 6), Tone.now());
+            let volume = p.constrain(-18 + (grain * 6), -60, 0); // Constrain volume to safe range
+            squeakOsc.volume.setValueAtTime(volume, Tone.now());
           }
         }
 
@@ -1291,12 +1295,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (osc && osc.frequency) {
             // Create a brief echo-like sound
             osc.frequency.setValueAtTime(freq, Tone.now());
-            osc.volume.setValueAtTime(-22, Tone.now());
+            let volume = p.constrain(-22, -60, 0); // Constrain volume to safe range
+            osc.volume.setValueAtTime(volume, Tone.now());
             
             // Quick fade for echo effect
             setTimeout(() => {
               if (osc && osc.volume) {
-                osc.volume.setValueAtTime(-40, Tone.now());
+                let fadeVolume = p.constrain(-40, -60, 0); // Constrain fade volume
+                osc.volume.setValueAtTime(fadeVolume, Tone.now());
               }
             }, delay * 200);
           }
@@ -1322,7 +1328,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (clickOsc && clickOsc.frequency) {
             clickOsc.frequency.setValueAtTime(clickFreq, Tone.now());
-            clickOsc.volume.setValueAtTime(-18, Tone.now());
+            let volume = p.constrain(-18, -60, 0); // Constrain volume to safe range
+            clickOsc.volume.setValueAtTime(volume, Tone.now());
           }
           
           lastClickTime = currentTime;
@@ -1339,7 +1346,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (squeakOsc && squeakOsc.frequency) {
             squeakOsc.frequency.setValueAtTime(baseFreq + vibrato, Tone.now());
-            squeakOsc.volume.setValueAtTime(-18, Tone.now());
+            let volume = p.constrain(-18, -60, 0); // Constrain volume to safe range
+            squeakOsc.volume.setValueAtTime(volume, Tone.now());
           }
           
           lastSqueakTime = currentTime;
