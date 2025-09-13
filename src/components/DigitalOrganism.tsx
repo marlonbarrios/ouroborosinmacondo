@@ -368,24 +368,24 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             
             osc.connect(filter);
             
-            // Initialize drone oscillators
-            droneOsc1 = new Tone.Oscillator({
-              frequency: 40,
-              type: "sine",
-              volume: -24
-            }).connect(reverb);
+            // DISABLED: All drone oscillators to eliminate constant high-pitch drone
+            // droneOsc1 = new Tone.Oscillator({
+            //   frequency: 40,
+            //   type: "sine",
+            //   volume: -24
+            // }).connect(reverb);
             
-            droneOsc2 = new Tone.Oscillator({
-              frequency: 43,
-              type: "sine",
-              volume: -24
-            }).connect(reverb);
+            // droneOsc2 = new Tone.Oscillator({
+            //   frequency: 43,
+            //   type: "sine",
+            //   volume: -24
+            // }).connect(reverb);
             
-            droneFilter = new Tone.Filter({
-              frequency: 800,
-              type: "lowpass",
-              Q: 12
-            }).connect(reverb);
+            // droneFilter = new Tone.Filter({
+            //   frequency: 800,
+            //   type: "lowpass",
+            //   Q: 12
+            // }).connect(reverb);
             
             // Click and squeak sounds
             clickOsc = new Tone.Oscillator({
@@ -530,13 +530,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             osc.start();
           }
           
-          if (droneOsc1 && !droneOsc1.started) {
-            droneOsc1.start();
-          }
+          // DISABLED: All drone oscillator starts to eliminate constant high-pitch drone
+          // if (droneOsc1 && !droneOsc1.started) {
+          //   droneOsc1.start();
+          // }
           
-          if (droneOsc2 && !droneOsc2.started) {
-            droneOsc2.start();
-          }
+          // if (droneOsc2 && !droneOsc2.started) {
+          //   droneOsc2.start();
+          // }
           
           console.log('Sound components started');
         }
@@ -2360,6 +2361,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function updateDrone() {
+          // COMPLETELY DISABLED: All drone operations to eliminate constant high-pitch drone
+          return; // Exit immediately - no drone sounds allowed
+          
           if (!soundEnabled || !audioStarted) return;
           
           let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
