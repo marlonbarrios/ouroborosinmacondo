@@ -1564,8 +1564,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.fill(255, 255, 255, storyOpacity);
             p.text(currentStoryText, tickerX, p.height - 50);
             
-            // Animate ticker - slower speed
-            tickerX -= 0.8;
+            // Animate ticker - 30% faster speed
+            tickerX -= 1.04;
             if (tickerX < -p.textWidth(currentStoryText)) {
               tickerX = p.width;
             }
