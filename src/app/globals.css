@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #f0f3f5;
 }
 
 @theme inline {
@@ -10,17 +10,74 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  
+  /* Ouroboros color palette */
+  --color-deep-teal: #19535f;
+  --color-jade: #0b7a75;
+  --color-sand: #d7c9aa;
+  --color-rust: #7b2d26;
+  --color-pearl: #f0f3f5;
+  --color-warm-sand: #d8a47f;
+  --color-coral: #ef8354;
+  --color-rose: #ee4b6a;
+  --color-deep-rose: #df3b57;
+  --color-teal: #0f7173;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Global styles for the organism interface */
+.p5Canvas {
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.status-on {
+  background-color: var(--color-rust);
+  box-shadow: 0 0 8px rgba(123, 45, 38, 0.6);
+}
+
+.status-off {
+  background-color: rgba(240, 243, 245, 0.3);
+}
+
+.recording-indicator {
+  background-color: #ff0000;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+}
+
+/* Story display visibility */
+#story-display.visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#api-config.visible {
+  display: block !important;
+}
+
+.story-loading {
+  color: #999 !important;
+  font-style: normal !important;
+}
+
+/* Text effects */
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
