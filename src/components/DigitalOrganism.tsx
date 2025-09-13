@@ -544,9 +544,32 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           console.log('Sound components started');
         }
 
+        // Performance monitoring
+        let frameCounter = 0;
+        let lastPerformanceCheck = p.millis();
+        
         // Main draw function
         p.draw = () => {
           try {
+            // Performance monitoring and emergency cleanup
+            frameCounter++;
+            if (frameCounter % 300 === 0) { // Every 5 seconds at 60fps
+              let currentTime = p.millis();
+              let timeDiff = currentTime - lastPerformanceCheck;
+              let actualFPS = 300000 / timeDiff; // Calculate actual FPS
+              
+              if (actualFPS < 30) { // If FPS drops below 30
+                console.warn('Performance degradation detected, cleaning up...');
+                // Emergency cleanup
+                if (edgeParticles.length > 20) edgeParticles.splice(0, edgeParticles.length - 10);
+                if (harmonics.length > 6) harmonics.splice(0, harmonics.length - 4);
+                if (velocityHistory.length > historyLength) velocityHistory.splice(0, velocityHistory.length - historyLength);
+                if (activityDetector.movementHistory.length > 30) activityDetector.movementHistory.splice(0, activityDetector.movementHistory.length - 20);
+              }
+              
+              lastPerformanceCheck = currentTime;
+            }
+            
             // Performance check
             let currentTime = p.millis();
             let frameTime = currentTime - lastFrameTime;
@@ -791,10 +814,16 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             edgeIntensity = p.map(segments[0].y, p.height-100, p.height, 0, 1);
           }
           
-          // Update and draw edge particles
+          // Update and draw edge particles with aggressive cleanup
           for (let i = edgeParticles.length - 1; i >= 0; i--) {
             let particle = edgeParticles[i];
             particle.age += 0.05;
+            
+            // Remove particles more aggressively to prevent memory leak
+            if (particle.age > 0.8 || edgeParticles.length > 50) {
+              edgeParticles.splice(i, 1);
+              continue;
+            }
             
             // Particle movement
             let angle = p.noise(particle.x * 0.01, particle.y * 0.01, p.frameCount * 0.02) * p.TWO_PI;
@@ -963,10 +992,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           }
           lastDirection = currentVelocity.copy();
           
-          // Update velocity history
+          // Update velocity history with strict limits to prevent memory leak
           velocityHistory.push(currentVelocity.mag());
           if (velocityHistory.length > historyLength) {
             velocityHistory.shift();
+          }
+          // Emergency cleanup if array grows too large
+          if (velocityHistory.length > historyLength * 2) {
+            velocityHistory.splice(0, velocityHistory.length - historyLength);
           }
           
           // Calculate average velocity
@@ -1450,6 +1483,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                   freq: baseFreq * (2 + complexityLevel * 0.5),
                   amp: 0.3 / (1 + complexityLevel * 0.2)
                 });
+                // Cleanup old harmonics to prevent memory leak
+                if (harmonics.length > 12) {
+                  harmonics.splice(0, harmonics.length - 8);
+                }
               } catch (e) {
                 console.log('Harmonic creation failed:', e);
               }
@@ -1476,6 +1513,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (activityDetector.movementHistory.length > 30) {
             activityDetector.movementHistory.shift();
+          }
+          // Emergency cleanup if array grows too large
+          if (activityDetector.movementHistory.length > 60) {
+            activityDetector.movementHistory = activityDetector.movementHistory.slice(-30);
           }
           
           let avgMovement = activityDetector.movementHistory.reduce((a, b) => a + b, 0) / activityDetector.movementHistory.length;
@@ -2565,6 +2606,19 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
     return () => {
       if (p5InstanceRef.current) {
+        // Comprehensive cleanup to prevent memory leaks
+        console.log('Cleaning up DigitalOrganism...');
+        
+        // Dispose audio resources
+        try {
+          if (typeof window !== 'undefined' && (window as any).Tone) {
+            (window as any).Tone.Transport.stop();
+            (window as any).Tone.Transport.cancel();
+          }
+        } catch (e) {
+          console.warn('Audio cleanup error:', e);
+        }
+        
         p5InstanceRef.current.remove();
         p5InstanceRef.current = null;
       }
