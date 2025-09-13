@@ -1246,7 +1246,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           lastSoundTime = currentTime;
           
           let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
-          let baseFreq = p.map(speed, 0, 20, 80, 250);
+          let baseFreq = p.map(speed, 0, 20, 40, 120); // Much lower frequency range
           baseFreq *= p.map(curvature, 0, p.PI, 1, 1.5);
           
           let duration = p.map(p.constrain(bendAmount, 0, 1), 0, 1, 0.4, 1.2);
@@ -1271,7 +1271,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (!soundEnabled || !audioStarted || !osc) return;
             
             // Create melodic sequences based on position and movement
-          let baseNote = p.map(y, 0, p.height, 200, 800); // Vertical position determines base pitch
+          let baseNote = p.map(y, 0, p.height, 60, 200); // Much lower pitch range
           let harmony = p.map(x, 0, p.width, 0.8, 1.2); // Horizontal position creates harmony
           let rhythm = p.map(p.constrain(speed, 0, 10), 0, 10, 0.5, 2); // Speed affects rhythm, constrained
           rhythm = p.constrain(rhythm, 0, 3); // Hard limit on rhythm to prevent extreme calculations
@@ -1300,7 +1300,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let beatIndex = Math.floor(p.frameCount / 8) % beatPattern.length;
           
           if (beatPattern[beatIndex] === 1) {
-            let freq = p.map(p.constrain(speed, 0, 10), 0, 10, 150, 400);
+            let freq = p.map(p.constrain(speed, 0, 10), 0, 10, 50, 150); // Much lower frequency range
             let intensity = p.map(p.constrain(activity, 0, 1), 0, 1, 0.3, 0.8);
             intensity = p.constrain(intensity, 0, 1); // Hard limit on intensity to prevent extreme calculations
             
@@ -1319,7 +1319,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           // Create textural sounds based on environment and position
           let texture = p.constrain(p.noise(x * 0.01, y * 0.01, p.frameCount * 0.01), 0, 1); // Constrain noise output
-          let freq = p.map(texture, 0, 1, 100, 600);
+          let freq = p.map(texture, 0, 1, 40, 180); // Much lower frequency range
           let grain = p.map(texture, 0, 1, 0.1, 0.9);
           grain = p.constrain(grain, 0, 1); // Hard limit on grain to prevent extreme calculations
           
@@ -1338,7 +1338,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           // Create spatial echo effects based on position
           let delay = p.map(x, 0, p.width, 0.1, 0.5);
           let feedback = p.map(y, 0, p.height, 0.2, 0.6);
-          let freq = p.map(p.dist(x, y, p.width/2, p.height/2), 0, p.width/2, 400, 800);
+          let freq = p.map(p.dist(x, y, p.width/2, p.height/2), 0, p.width/2, 80, 200); // Much lower frequency range
           
           // Use available oscillator for reverb effect
           if (osc && osc.frequency) {
@@ -1371,7 +1371,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.height - head.y
           );
           
-          let clickFreq = p.map(edgeProximity, 0, 200, 2000, 800);
+          let clickFreq = p.map(edgeProximity, 0, 200, 100, 250); // Much lower frequency range
           let clickRate = p.map(edgeProximity, 0, 200, 50, 200);
           minClickInterval = clickRate;
           
@@ -1390,7 +1390,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let currentTime = p.millis();
           if (currentTime - lastSqueakTime < 150) return;
           
-          let baseFreq = p.map(intensity, 0, 1, 200, 400);
+          let baseFreq = p.map(intensity, 0, 1, 60, 150); // Much lower frequency range
           let vibrato = p.sin(p.frameCount * 0.2) * 10;
           
           if (squeakOsc && squeakOsc.frequency) {
