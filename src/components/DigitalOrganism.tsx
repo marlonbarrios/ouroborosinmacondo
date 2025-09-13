@@ -1255,13 +1255,16 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
             osc.volume.setValueAtTime(volume, Tone.now());
           }
+          } catch (error) {
+            console.warn('makeUnderwaterSound error (visual protected):', error);
+          }
         }
 
         function makeMelodicSound(x: number, y: number, speed: number) {
           try {
             if (!soundEnabled || !audioStarted || !osc) return;
-          
-          // Create melodic sequences based on position and movement
+            
+            // Create melodic sequences based on position and movement
           let baseNote = p.map(y, 0, p.height, 200, 800); // Vertical position determines base pitch
           let harmony = p.map(x, 0, p.width, 0.8, 1.2); // Horizontal position creates harmony
           let rhythm = p.map(p.constrain(speed, 0, 10), 0, 10, 0.5, 2); // Speed affects rhythm, constrained
@@ -1277,6 +1280,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
             if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
             osc.volume.setValueAtTime(volume, Tone.now());
+          }
+          } catch (error) {
+            console.warn('makeMelodicSound error (visual protected):', error);
           }
         }
 
