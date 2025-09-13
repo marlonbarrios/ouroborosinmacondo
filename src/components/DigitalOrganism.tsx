@@ -626,35 +626,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Update growth system
             updateGrowth();
             
-            // Update sound system with COMPLETE isolation - VISUAL NEVER AFFECTED
-            if (soundEnabled && audioStarted) {
-              // Schedule audio updates asynchronously to completely isolate from visual rendering
-              setTimeout(() => {
-                try {
-                  updateSound();
-                } catch (error) {
-                  console.warn('updateSound error (visual protected):', error);
-                  // Disable problematic audio temporarily
-                  soundEnabled = false;
-                  setTimeout(() => { soundEnabled = true; }, 1000);
-                }
-              }, 0);
-              
-              setTimeout(() => {
-                try {
-                  updateDrone();
-                } catch (error) {
-                  console.warn('updateDrone error (visual protected):', error);
-                }
-              }, 1);
-              
-              setTimeout(() => {
-                try {
-                  updateAmbientSound();
-                } catch (error) {
-                  console.warn('updateAmbientSound error (visual protected):', error);
-                }
-              }, 2);
+            // EMERGENCY: COMPLETELY DISABLE ALL AUDIO to eliminate range errors
+            // Sound system temporarily disabled to prevent any volume operations
+            if (false) { // Disabled: soundEnabled && audioStarted
+              // All audio operations disabled to prevent range errors
             }
             
             // Draw language dropdown
@@ -1208,9 +1183,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             safeVolume = p.constrain(safeVolume, -40, 0);
             safeVolume = Math.max(-40, Math.min(0, safeVolume)); // Extra constraint
             
-            if (audioNode && audioNode.volume && audioNode.volume.setValueAtTime) {
-              audioNode.volume.setValueAtTime(safeVolume, Tone.now());
-            }
+            // COMPLETELY DISABLED: All volume operations to prevent range errors
+            // if (audioNode && audioNode.volume && audioNode.volume.setValueAtTime) {
+            //   audioNode.volume.setValueAtTime(safeVolume, Tone.now());
+            // }
           } catch (error) {
             console.warn('safeSetVolume error (ignored):', error);
           }
@@ -1420,7 +1396,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (squeakOsc && squeakOsc.frequency) {
             squeakOsc.frequency.setValueAtTime(baseFreq + vibrato, Tone.now());
             let volume = p.constrain(-18, -40, 0); // Tighter constraint to prevent extreme values
-            squeakOsc.volume.setValueAtTime(volume, Tone.now());
+            // DISABLED: squeakOsc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
           }
           
           lastSqueakTime = currentTime;
