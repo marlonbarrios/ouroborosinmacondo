@@ -1083,7 +1083,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               let ringSize = glowSize * (1 - r * 0.2);
               let ringOpacity = p.map(r, 1, ringCount, 0.8, 0.4) * colors.body.a/255;
               
-              let ringColor;
+              let ringColor = PALETTE.pearl; // Default color
               if (i === 0) {
                 // Special head colors - brighter and more prominent
                 switch(r % 5) {
@@ -1092,6 +1092,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                   case 2: ringColor = PALETTE.rust; break;
                   case 3: ringColor = PALETTE.deepTeal; break;
                   case 4: ringColor = PALETTE.sand; break;
+                  default: ringColor = PALETTE.pearl; break;
                 }
                 // Head brightness increases with movement glow - more subtle
                 ringOpacity *= (1.05 + headGlow * 0.3); // Subtle brightness increase when moving
@@ -1103,6 +1104,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                   case 2: ringColor = PALETTE.sand; break;
                   case 3: ringColor = PALETTE.rust; break;
                   case 4: ringColor = PALETTE.pearl; break;
+                  default: ringColor = PALETTE.deepTeal; break;
                 }
               }
               
