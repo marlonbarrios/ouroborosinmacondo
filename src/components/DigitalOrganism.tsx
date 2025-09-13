@@ -2296,16 +2296,16 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             
             // Extremely quiet and brief sounds - more like whispers
             let baseAmp = p.map(speed, 0, 10, 0.001, 0.0005); // Even quieter
-            let whisperAmp = p.sin(p.frameCount * 0.01) * 0.0005; // Softer whisper effect
+            let whisperAmp = p.abs(p.sin(p.frameCount * 0.01)) * 0.0005; // Softer whisper effect (absolute value)
             
             // Very brief sound bursts instead of continuous drones
             if (droneOsc1 && typeof droneOsc1.freq !== 'undefined') {
               if (typeof droneOsc1.freq === 'function') {
                 droneOsc1.freq(baseFreq + evolutionMod);
-                droneOsc1.amp(baseAmp + whisperAmp);
+                droneOsc1.amp(p.constrain(baseAmp + whisperAmp, 0, 1)); // Constrain amplitude to safe range
               } else {
                 droneOsc1.freq = baseFreq + evolutionMod;
-                droneOsc1.amp = baseAmp + whisperAmp;
+                droneOsc1.amp = p.constrain(baseAmp + whisperAmp, 0, 1); // Constrain amplitude to safe range
               }
               
               // Turn off quickly to make it more like whispers than drones
@@ -2322,10 +2322,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (p.random(1) < 0.3 && droneOsc2 && typeof droneOsc2.freq !== 'undefined') {
               if (typeof droneOsc2.freq === 'function') {
                 droneOsc2.freq(baseFreq * 1.1 + detune);
-                droneOsc2.amp((baseAmp * 0.1) + (whisperAmp * 0.1));
+                droneOsc2.amp(p.constrain((baseAmp * 0.1) + (whisperAmp * 0.1), 0, 1)); // Constrain amplitude to safe range
               } else {
                 droneOsc2.freq = baseFreq * 1.1 + detune;
-                droneOsc2.amp = (baseAmp * 0.1) + (whisperAmp * 0.1);
+                droneOsc2.amp = p.constrain((baseAmp * 0.1) + (whisperAmp * 0.1), 0, 1); // Constrain amplitude to safe range
               }
               
               setTimeout(() => {
@@ -2367,7 +2367,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (typeof osc !== 'undefined' && osc.amp) {
               if (typeof osc.freq === 'function') {
                 osc.freq(ambientFreq);
-                osc.amp(fluctuatingAmp * pulsing * 0.1); // Even quieter
+                osc.amp(p.constrain(fluctuatingAmp * pulsing * 0.1, 0, 1)); // Even quieter, constrained to safe range
               }
               
               // Turn off quickly to make it more like environmental sounds
