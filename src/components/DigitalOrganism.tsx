@@ -342,12 +342,12 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           try {
             await Tone.start();
             
-            // Initialize audio components with proper gain
-            osc = new Tone.Oscillator({
-              frequency: 440,
-              type: "sawtooth",
-              volume: -12
-            });
+            // DISABLED: Main oscillator causing high-pitch drone
+            // osc = new Tone.Oscillator({
+            //   frequency: 440,
+            //   type: "sawtooth",
+            //   volume: -12
+            // });
             
             reverb = new Tone.Reverb({
               decay: 2,
@@ -366,7 +366,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               Q: 3
             }).connect(delay);
             
-            osc.connect(filter);
+            // DISABLED: osc.connect(filter) - osc is disabled above
+            // osc.connect(filter);
             
             // DISABLED: All drone oscillators to eliminate constant high-pitch drone
             // droneOsc1 = new Tone.Oscillator({
@@ -387,18 +388,18 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             //   Q: 12
             // }).connect(reverb);
             
-            // Click and squeak sounds
-            clickOsc = new Tone.Oscillator({
-              frequency: 1000,
-              type: "sine",
-              volume: -18
-            }).connect(filter);
+            // DISABLED: Click and squeak sounds - high frequency oscillators
+            // clickOsc = new Tone.Oscillator({
+            //   frequency: 1000,
+            //   type: "sine",
+            //   volume: -18
+            // }).connect(filter);
             
-            squeakOsc = new Tone.Oscillator({
-              frequency: 300,
-              type: "sine",
-              volume: -18
-            }).connect(filter);
+            // squeakOsc = new Tone.Oscillator({
+            //   frequency: 300,
+            //   type: "sine",
+            //   volume: -18
+            // }).connect(filter);
             
             // Intersection sound synth
             intersectionSound = new Tone.Synth({
@@ -526,9 +527,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         };
 
         function startSound() {
-          if (osc && !osc.started) {
-            osc.start();
-          }
+          // DISABLED: Main oscillator start to eliminate high-pitch drone
+          // if (osc && !osc.started) {
+          //   osc.start();
+          // }
           
           // DISABLED: All drone oscillator starts to eliminate constant high-pitch drone
           // if (droneOsc1 && !droneOsc1.started) {
@@ -1258,13 +1260,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let maxAmp = p.map(p.constrain(speed, 0, 20), 0, 20, 0.3, 0.8) * p.map(safeStretchAmount, 0, 10, 1, 1.5);
           maxAmp = p.constrain(maxAmp, 0, 2); // Hard limit on maxAmp to prevent extreme volume calculations
           
-          if (osc && osc.frequency) {
-            osc.frequency.setValueAtTime(baseFreq, Tone.now());
-            let rawVolume = -12 + (maxAmp * 12);
-            let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
-            if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-            safeSetVolume(osc, volume); // Use safe volume function
-          }
+          // DISABLED: osc usage - oscillator is disabled to prevent high-pitch drone
+          // if (osc && osc.frequency) {
+          //   osc.frequency.setValueAtTime(baseFreq, Tone.now());
+          //   let rawVolume = -12 + (maxAmp * 12);
+          //   let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
+          //   if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
+          //   safeSetVolume(osc, volume); // Use safe volume function
+          // }
           } catch (error) {
             console.warn('makeUnderwaterSound error (visual protected):', error);
           }
@@ -1287,13 +1290,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let notes = [baseNote, baseNote * harmony, baseNote * 1.25, baseNote * harmony * 0.75];
           let noteIndex = Math.floor(p.frameCount / 15) % notes.length;
           
-          if (osc && osc.frequency) {
-            osc.frequency.setValueAtTime(notes[noteIndex], Tone.now());
-            let rawVolume = -15 + (rhythm * 3);
-            let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
-            if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-            // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
-          }
+          // DISABLED: osc usage - oscillator is disabled to prevent high-pitch drone
+          // if (osc && osc.frequency) {
+          //   osc.frequency.setValueAtTime(notes[noteIndex], Tone.now());
+          //   let rawVolume = -15 + (rhythm * 3);
+          //   let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
+          //   if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
+          //   // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
+          // }
           } catch (error) {
             console.warn('makeMelodicSound error (visual protected):', error);
           }
@@ -1353,21 +1357,21 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let feedback = p.map(y, 0, p.height, 0.2, 0.6);
           let freq = p.map(p.dist(x, y, p.width/2, p.height/2), 0, p.width/2, 80, 200); // Much lower frequency range
           
-          // Use available oscillator for reverb effect
-          if (osc && osc.frequency) {
-            // Create a brief echo-like sound
-            osc.frequency.setValueAtTime(freq, Tone.now());
-            let volume = p.constrain(-22, -40, 0); // Tighter constraint to prevent extreme values
-            // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
-            
-            // Quick fade for echo effect
-            setTimeout(() => {
-              if (osc && osc.volume) {
-                let fadeVolume = p.constrain(-40, -40, 0); // Tighter constraint to prevent extreme values
-                // DISABLED: osc.volume.setValueAtTime(fadeVolume, Tone.now()); // Disabled to prevent range errors
-              }
-            }, delay * 200);
-          }
+          // DISABLED: Use available oscillator for reverb effect - osc is disabled
+          // if (osc && osc.frequency) {
+          //   // Create a brief echo-like sound
+          //   osc.frequency.setValueAtTime(freq, Tone.now());
+          //   let volume = p.constrain(-22, -40, 0); // Tighter constraint to prevent extreme values
+          //   // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
+          //   
+          //   // Quick fade for echo effect
+          //   setTimeout(() => {
+          //     if (osc && osc.volume) {
+          //       let fadeVolume = p.constrain(-40, -40, 0); // Tighter constraint to prevent extreme values
+          //       // DISABLED: osc.volume.setValueAtTime(fadeVolume, Tone.now()); // Disabled to prevent range errors
+          //     }
+          //   }, delay * 200);
+          // }
         }
 
         function makeClickSound() {
@@ -2425,6 +2429,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function updateAmbientSound() {
+          // COMPLETELY DISABLED: All ambient sounds to eliminate high-pitch drone (300-600Hz)
+          return; // Exit immediately - no ambient sounds allowed
+          
           if (!soundEnabled || evolutionState.sound < 0.2) return;
           
           let currentTime = p.millis();
