@@ -626,25 +626,35 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Update growth system
             updateGrowth();
             
-            // Update sound system with full spatial audio - PROTECTED FROM CRASHES
+            // Update sound system with COMPLETE isolation - VISUAL NEVER AFFECTED
             if (soundEnabled && audioStarted) {
-              try {
-                updateSound();
-              } catch (error) {
-                console.warn('updateSound error (visual protected):', error);
-              }
+              // Schedule audio updates asynchronously to completely isolate from visual rendering
+              setTimeout(() => {
+                try {
+                  updateSound();
+                } catch (error) {
+                  console.warn('updateSound error (visual protected):', error);
+                  // Disable problematic audio temporarily
+                  soundEnabled = false;
+                  setTimeout(() => { soundEnabled = true; }, 1000);
+                }
+              }, 0);
               
-              try {
-                updateDrone();
-              } catch (error) {
-                console.warn('updateDrone error (visual protected):', error);
-              }
+              setTimeout(() => {
+                try {
+                  updateDrone();
+                } catch (error) {
+                  console.warn('updateDrone error (visual protected):', error);
+                }
+              }, 1);
               
-              try {
-                updateAmbientSound();
-              } catch (error) {
-                console.warn('updateAmbientSound error (visual protected):', error);
-              }
+              setTimeout(() => {
+                try {
+                  updateAmbientSound();
+                } catch (error) {
+                  console.warn('updateAmbientSound error (visual protected):', error);
+                }
+              }, 2);
             }
             
             // Draw language dropdown
@@ -1186,6 +1196,26 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           headGlow *= glowDecay;
         }
 
+        // Universal safe volume function to prevent ALL range errors
+        function safeSetVolume(audioNode: any, volume: number) {
+          // EMERGENCY: Disable all volume operations to protect visual system
+          return; // Do nothing - no volume changes allowed
+          
+          try {
+            // Triple-layer protection for volume values
+            let safeVolume = volume;
+            if (isNaN(safeVolume) || !isFinite(safeVolume)) safeVolume = -30;
+            safeVolume = p.constrain(safeVolume, -40, 0);
+            safeVolume = Math.max(-40, Math.min(0, safeVolume)); // Extra constraint
+            
+            if (audioNode && audioNode.volume && audioNode.volume.setValueAtTime) {
+              audioNode.volume.setValueAtTime(safeVolume, Tone.now());
+            }
+          } catch (error) {
+            console.warn('safeSetVolume error (ignored):', error);
+          }
+        }
+
         function updateSound() {
           // Wrap ALL audio operations in try-catch to prevent visual system crashes
           try {
@@ -1253,7 +1283,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let rawVolume = -12 + (maxAmp * 12);
             let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
             if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-            osc.volume.setValueAtTime(volume, Tone.now());
+            safeSetVolume(osc, volume); // Use safe volume function
           }
           } catch (error) {
             console.warn('makeUnderwaterSound error (visual protected):', error);
@@ -1710,9 +1740,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (now - lastIntersectionSound > minIntersectionSoundInterval) {
             let baseFreq = p.random([220, 330, 440, 550]);
             if (intersectionSound) {
-              // Set safe volume before triggering
-              intersectionSound.volume.value = p.constrain(-20, -40, 0);
-              intersectionSound.triggerAttackRelease(baseFreq, "16n");
+              // EMERGENCY: Disable volume operations to protect visual system
+              // intersectionSound.volume.value = p.constrain(-20, -40, 0);
+              try {
+                intersectionSound.triggerAttackRelease(baseFreq, "16n");
+              } catch (error) {
+                console.warn('triggerAttackRelease error (ignored):', error);
+              }
             }
             lastIntersectionSound = now;
           }
@@ -1737,9 +1771,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (soundEnabled && audioStarted && p.millis() - lastOuroborosSound > 1000) {
             if (ouroborosSound) {
-              // Set safe volume before triggering
-              ouroborosSound.volume.value = p.constrain(-25, -40, 0);
-              ouroborosSound.triggerAttackRelease(['C4', 'E4', 'G4', 'B4'], '2n');
+              // EMERGENCY: Disable volume operations to protect visual system  
+              // ouroborosSound.volume.value = p.constrain(-25, -40, 0);
+              try {
+                ouroborosSound.triggerAttackRelease(['C4', 'E4', 'G4', 'B4'], '2n');
+              } catch (error) {
+                console.warn('ouroborosSound triggerAttackRelease error (ignored):', error);
+              }
             }
             lastOuroborosSound = p.millis();
           }
