@@ -1246,7 +1246,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           lastSoundTime = currentTime;
           
           let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
-          let baseFreq = p.map(speed, 0, 20, 40, 120); // Much lower frequency range
+          let baseFreq = p.map(speed, 0, 20, 20, 60); // Even lower frequency range (very deep bass)
+          // Add organic variation to make it less even
+          baseFreq += p.sin(p.frameCount * 0.01) * 8; // Slow frequency modulation
+          baseFreq += p.noise(p.frameCount * 0.005) * 12; // Organic noise variation
           baseFreq *= p.map(curvature, 0, p.PI, 1, 1.5);
           
           let duration = p.map(p.constrain(bendAmount, 0, 1), 0, 1, 0.4, 1.2);
@@ -1271,7 +1274,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (!soundEnabled || !audioStarted || !osc) return;
             
             // Create melodic sequences based on position and movement
-          let baseNote = p.map(y, 0, p.height, 60, 200); // Much lower pitch range
+          let baseNote = p.map(y, 0, p.height, 25, 80); // Even lower pitch range (deep bass)
+          // Add organic variation to make it less even
+          baseNote += p.sin(p.frameCount * 0.02) * 5; // Gentle frequency drift
+          baseNote += p.noise(p.frameCount * 0.008) * 8; // Organic texture
           let harmony = p.map(x, 0, p.width, 0.8, 1.2); // Horizontal position creates harmony
           let rhythm = p.map(p.constrain(speed, 0, 10), 0, 10, 0.5, 2); // Speed affects rhythm, constrained
           rhythm = p.constrain(rhythm, 0, 3); // Hard limit on rhythm to prevent extreme calculations
@@ -1300,7 +1306,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let beatIndex = Math.floor(p.frameCount / 8) % beatPattern.length;
           
           if (beatPattern[beatIndex] === 1) {
-            let freq = p.map(p.constrain(speed, 0, 10), 0, 10, 50, 150); // Much lower frequency range
+            let freq = p.map(p.constrain(speed, 0, 10), 0, 10, 20, 70); // Even lower frequency range (deep bass)
+            // Add variation to make it less even
+            freq += p.sin(p.frameCount * 0.03) * 6; // Rhythmic variation
+            freq += p.random(-4, 4); // Random variation per beat
             let intensity = p.map(p.constrain(activity, 0, 1), 0, 1, 0.3, 0.8);
             intensity = p.constrain(intensity, 0, 1); // Hard limit on intensity to prevent extreme calculations
             
@@ -1319,7 +1328,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           // Create textural sounds based on environment and position
           let texture = p.constrain(p.noise(x * 0.01, y * 0.01, p.frameCount * 0.01), 0, 1); // Constrain noise output
-          let freq = p.map(texture, 0, 1, 40, 180); // Much lower frequency range
+          let freq = p.map(texture, 0, 1, 15, 50); // Even lower frequency range (very deep bass)
+          // Add organic variation to make it less even
+          freq += p.sin(p.frameCount * 0.025) * 3; // Slow textural drift
+          freq += p.noise(p.frameCount * 0.01) * 5; // Organic texture variation
           let grain = p.map(texture, 0, 1, 0.1, 0.9);
           grain = p.constrain(grain, 0, 1); // Hard limit on grain to prevent extreme calculations
           
