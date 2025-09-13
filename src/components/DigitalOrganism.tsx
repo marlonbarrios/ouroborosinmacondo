@@ -1042,7 +1042,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           let colors = getOrganismColor();
           
           // Calculate edge proximity glow
-          let edgeProximity = p.min(
+          let edgeProximity = Math.min(
             head.x,
             p.width - head.x,
             head.y,
@@ -1309,7 +1309,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let rawVolume = -15 + (rhythm * 3);
             let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
             if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-            osc.volume.setValueAtTime(volume, Tone.now());
+            // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
           }
           } catch (error) {
             console.warn('makeMelodicSound error (visual protected):', error);
@@ -1333,7 +1333,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               let rawVolume = -20 + (intensity * 8);
               let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
               if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-              clickOsc.volume.setValueAtTime(volume, Tone.now());
+              // DISABLED: clickOsc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
             }
           }
         }
@@ -1352,7 +1352,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let rawVolume = -18 + (grain * 6);
             let volume = p.constrain(rawVolume, -40, 0); // Tighter constraint to prevent extreme values
             if (isNaN(volume) || !isFinite(volume)) volume = -20; // Fallback for invalid values
-            squeakOsc.volume.setValueAtTime(volume, Tone.now());
+            // DISABLED: squeakOsc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
           }
         }
 
@@ -1369,13 +1369,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Create a brief echo-like sound
             osc.frequency.setValueAtTime(freq, Tone.now());
             let volume = p.constrain(-22, -40, 0); // Tighter constraint to prevent extreme values
-            osc.volume.setValueAtTime(volume, Tone.now());
+            // DISABLED: osc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
             
             // Quick fade for echo effect
             setTimeout(() => {
               if (osc && osc.volume) {
                 let fadeVolume = p.constrain(-40, -40, 0); // Tighter constraint to prevent extreme values
-                osc.volume.setValueAtTime(fadeVolume, Tone.now());
+                // DISABLED: osc.volume.setValueAtTime(fadeVolume, Tone.now()); // Disabled to prevent range errors
               }
             }, delay * 200);
           }
@@ -1388,7 +1388,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (currentTime - lastClickTime < minClickInterval) return;
           
           let head = segments[0];
-          let edgeProximity = p.min(
+          let edgeProximity = Math.min(
             head.x,
             p.width - head.x,
             head.y,
@@ -1402,7 +1402,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (clickOsc && clickOsc.frequency) {
             clickOsc.frequency.setValueAtTime(clickFreq, Tone.now());
             let volume = p.constrain(-18, -40, 0); // Tighter constraint to prevent extreme values
-            clickOsc.volume.setValueAtTime(volume, Tone.now());
+            // DISABLED: clickOsc.volume.setValueAtTime(volume, Tone.now()); // Disabled to prevent range errors
           }
           
           lastClickTime = currentTime;
