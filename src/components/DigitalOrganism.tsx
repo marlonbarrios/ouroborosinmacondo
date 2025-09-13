@@ -626,11 +626,25 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Update growth system
             updateGrowth();
             
-            // Update sound system with full spatial audio
+            // Update sound system with full spatial audio - PROTECTED FROM CRASHES
             if (soundEnabled && audioStarted) {
-              updateSound();
-              updateDrone();
-              updateAmbientSound();
+              try {
+                updateSound();
+              } catch (error) {
+                console.warn('updateSound error (visual protected):', error);
+              }
+              
+              try {
+                updateDrone();
+              } catch (error) {
+                console.warn('updateDrone error (visual protected):', error);
+              }
+              
+              try {
+                updateAmbientSound();
+              } catch (error) {
+                console.warn('updateAmbientSound error (visual protected):', error);
+              }
             }
             
             // Draw language dropdown
@@ -1173,46 +1187,53 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function updateSound() {
-          if (!soundEnabled || !audioStarted) return;
-          
-          // More interesting and varied sound generation
-          if (p.frameCount % 6 === 0) { // Slightly more frequent for variety
-            let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
-            let head = segments[0];
-            let activity = dayNightCycle.activityLevel;
+          // Wrap ALL audio operations in try-catch to prevent visual system crashes
+          try {
+            if (!soundEnabled || !audioStarted) return;
             
-            // Multiple sound types based on different conditions
-            let soundChance = p.map(speed, 0, 10, 0.01, 0.08);
-            
-            if (p.random() < soundChance) {
-              let soundType = p.random();
+            // More interesting and varied sound generation
+            if (p.frameCount % 6 === 0) { // Slightly more frequent for variety
+              let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
+              let head = segments[0];
+              let activity = dayNightCycle.activityLevel;
               
-              if (soundType < 0.25) {
-                // Melodic exploration sounds
-                makeMelodicSound(head.x, head.y, speed);
-              } else if (soundType < 0.5) {
-                // Rhythmic movement sounds based on segments
-                makeRhythmicSound(speed, activity);
-              } else if (soundType < 0.75) {
-                // Textural sounds based on environment
-                makeTexturalSound(head.x, head.y);
-              } else {
-                // Enhanced underwater sounds
-                makeUnderwaterSound(speed / 15); // Slightly louder than before
+              // Multiple sound types based on different conditions
+              let soundChance = p.map(speed, 0, 10, 0.01, 0.08);
+              
+              if (p.random() < soundChance) {
+                let soundType = p.random();
+                
+                if (soundType < 0.25) {
+                  // Melodic exploration sounds
+                  makeMelodicSound(head.x, head.y, speed);
+                } else if (soundType < 0.5) {
+                  // Rhythmic movement sounds based on segments
+                  makeRhythmicSound(speed, activity);
+                } else if (soundType < 0.75) {
+                  // Textural sounds based on environment
+                  makeTexturalSound(head.x, head.y);
+                } else {
+                  // Enhanced underwater sounds
+                  makeUnderwaterSound(speed / 15); // Slightly louder than before
+                }
+              }
+              
+              // Add spatial reverb effects occasionally
+              if (p.random() < 0.005) {
+                makeSpatialReverb(head.x, head.y);
               }
             }
-            
-            // Add spatial reverb effects occasionally
-            if (p.random() < 0.005) {
-              makeSpatialReverb(head.x, head.y);
-            }
+          } catch (error) {
+            console.warn('Audio update error (visual system protected):', error);
+            // Don't disable sound entirely, just log and continue
           }
         }
 
         function makeUnderwaterSound(intensity = 0.5) {
-          if (!soundEnabled || !audioStarted || !osc) return;
-          
-          headGlow = p.lerp(headGlow, maxGlow * intensity, 0.3);
+          try {
+            if (!soundEnabled || !audioStarted || !osc) return;
+            
+            headGlow = p.lerp(headGlow, maxGlow * intensity, 0.3);
           
           let currentTime = p.millis();
           if (currentTime - lastSoundTime < minSoundInterval) return;
@@ -1237,7 +1258,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function makeMelodicSound(x: number, y: number, speed: number) {
-          if (!soundEnabled || !audioStarted || !osc) return;
+          try {
+            if (!soundEnabled || !audioStarted || !osc) return;
           
           // Create melodic sequences based on position and movement
           let baseNote = p.map(y, 0, p.height, 200, 800); // Vertical position determines base pitch
@@ -1623,7 +1645,11 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           for (let i = segments.length - 8; i < segments.length; i++) {
             let d = p.dist(head.x, head.y, segments[i].x, segments[i].y);
             if (d < segmentLength * 0.8) {
-              createOuroborosEffect(head.x, head.y);
+              try {
+                createOuroborosEffect(head.x, head.y);
+              } catch (error) {
+                console.warn('createOuroborosEffect error (visual protected):', error);
+              }
               return true;
             }
           }
@@ -1633,7 +1659,11 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let d = p.dist(head.x, head.y, segments[i].x, segments[i].y);
             if (d < segmentLength * 0.5) {
               createIntersectionEffect(head.x, head.y);
-              playIntersectionSound();
+              try {
+                playIntersectionSound();
+              } catch (error) {
+                console.warn('playIntersectionSound error (visual protected):', error);
+              }
               return true;
             }
           }
