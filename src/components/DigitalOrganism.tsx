@@ -28,7 +28,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         let storyDisplay: any;
         let storyText: any;
         let lastStoryTime = 0;
-        let storyInterval = 30000; // Generate story every 30 seconds
+        const storyInterval = 30000; // Generate story every 30 seconds
         let currentActivity = 'wandering';
         let activityHistory: any[] = [];
         let storyQueue: any[] = [];
@@ -38,15 +38,15 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         let currentStoryText = '';
         let storyOpacity = 0;
         let tickerX = 0;
-        let storiesStarted = true; // Auto-start
+        const storiesStarted = true; // Auto-start
         
         // Language variables
         let selectedLanguage = 'English';
         let showLanguageDropdown = false;
-        let languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Japanese', 'Chinese', 'Arabic', 'Russian'];
+        const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Japanese', 'Chinese', 'Arabic', 'Russian'];
 
         // Activity detection variables
-        let activityDetector = {
+        const activityDetector = {
             lastPosition: null,
             movementHistory: [],
             currentState: 'wandering',
@@ -57,48 +57,48 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         };
 
         // The amount of points in the path
-        let points = 40;  // Fixed number of segments
+        const points = 40;  // Fixed number of segments
 
         // The distance between the points (will be adjusted based on canvas size)
-        let baseSegmentLength = 45;
+        const baseSegmentLength = 45;
         let segmentLength: number;
 
         // Array to store all points of the snake
-        let segments: any[] = [];
+        const segments: any[] = [];
 
         // Variables for Perlin noise
         let noiseOffsetX = 0;
         let noiseOffsetY = 10000;
-        let baseNoiseSpeed = 0.02;
+        const baseNoiseSpeed = 0.02;
         let noiseSpeed = baseNoiseSpeed;
-        let baseNoiseAmount = 30;
+        const baseNoiseAmount = 30;
         let noiseAmount: number;
 
         // Variables for autonomous movement
         let targetX: number;
         let targetY: number;
-        let changeDirectionTime = 0;
-        let directionInterval = 100;
+        const changeDirectionTime = 0;
+        const directionInterval = 100;
         let speedMultiplier = 1;
-        let restTimer = 0;
+        const restTimer = 0;
 
         // Sound variables
         let osc: any;
         let reverb: any;
         let delay: any;
         let filter: any;
-        let soundTimer = 0;
-        let soundInterval = 100;
+        const soundTimer = 0;
+        const soundInterval = 100;
         let soundEnabled = false;
         let audioStarted = false;
 
         // Movement variables
         let lastPosition: any;
         let movementAmount = 0;
-        let soundThreshold = 0.5;
+        const soundThreshold = 0.5;
         let lastSoundTime = 0;
-        let minSoundInterval = 50;
-        let lastSoundIntensity = 0;
+        const minSoundInterval = 50;
+        const lastSoundIntensity = 0;
         let soundDecay = 0.95;
 
         // Rest variables

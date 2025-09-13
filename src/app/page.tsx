@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-const DigitalOrganism = dynamic(() => import('@/components/DigitalOrganism'), {
+const DigitalOrganism = dynamic(() => import('../components/DigitalOrganism'), {
   ssr: false,
   loading: () => (
     <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -29,7 +29,7 @@ export default function Home() {
         <h3 className="m-0 mb-5 text-gray-800 text-center text-lg font-semibold">🤖 AI Story Configuration</h3>
         
         <div className="api-info text-sm text-gray-600 mb-4 leading-relaxed">
-          Configure AI-powered story generation for the digital organism's consciousness.
+          Configure AI-powered story generation for the digital organism&apos;s consciousness.
         </div>
 
         {/* Model Selection */}
@@ -77,14 +77,14 @@ export default function Home() {
 
         {/* Action Buttons */}
         <button 
-          onClick={() => (window as any).connectToFalAI?.()} 
+          onClick={() => (window as unknown as { connectToFalAI?: () => void }).connectToFalAI?.()} 
           className="w-full p-3 mb-3 bg-blue-600 text-white border-none rounded-lg text-sm cursor-pointer transition-colors duration-300 hover:bg-blue-700 font-medium"
         >
           🚀 Connect to AI
         </button>
         
         <button 
-          onClick={() => (window as any).useTemplateStories?.()} 
+          onClick={() => (window as unknown as { useTemplateStories?: () => void }).useTemplateStories?.()} 
           className="w-full p-3 mb-4 bg-gray-600 text-white border-none rounded-lg text-sm cursor-pointer transition-colors duration-300 hover:bg-gray-700 font-medium"
         >
           🚫 Disable Stories
