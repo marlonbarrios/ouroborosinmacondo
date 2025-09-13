@@ -585,6 +585,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             updateTrail();
             
             // Draw nutrients FIRST (before trail and snake)
+            // Draw story ticker first (background layer)
+            drawStoryTicker();
+            
             drawNutrients();
             
             // Draw trail (underneath the snake) with organic colors
@@ -619,9 +622,6 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               updateDrone();
               updateAmbientSound();
             }
-            
-            // Draw story ticker
-            drawStoryTicker();
             
             // Draw language dropdown
             drawLanguageDropdown();
@@ -1385,7 +1385,11 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             return 'awakening';
           }
           
-          let movement = p.dist(head.x, head.y, activityDetector.lastPosition.x, activityDetector.lastPosition.y);
+          // Ensure lastPosition is not null before accessing properties
+          const lastPos = activityDetector.lastPosition;
+          if (!lastPos) return 'dormant';
+          
+          let movement = p.dist(head.x, head.y, lastPos.x, lastPos.y);
           activityDetector.movementHistory.push(movement);
           
           if (activityDetector.movementHistory.length > 30) {
@@ -1394,7 +1398,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           let avgMovement = activityDetector.movementHistory.reduce((a, b) => a + b, 0) / activityDetector.movementHistory.length;
           
-          activityDetector.lastPosition.set(head.x, head.y);
+          lastPos.set(head.x, head.y);
           
           let newState = 'wandering';
           
@@ -1420,9 +1424,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
         function drawStoryTicker() {
           if (currentStoryText && storyOpacity > 0) {
-            // Draw background bar for better text visibility
+            // Draw background bar for better text visibility - more transparent
             p.noStroke();
-            p.fill(0, 0, 0, 150);
+            p.fill(0, 0, 0, 80); // Much more transparent
             p.rect(0, p.height - 80, p.width, 60);
             
             // Draw text with white color and shadow for maximum visibility
