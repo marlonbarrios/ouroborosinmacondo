@@ -146,12 +146,12 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         let selfExploreTimer = 0;
         let selfExploreTarget = 0;
         let squeakOsc: any;
-        let squeakEnv: any;
+        // let squeakEnv: any; // Removed unused variable
         let lastSqueakTime = 0;
 
         // Velocity tracking variables
-        let velocityHistory: number[] = [];
-        let historyLength = 10;
+        const velocityHistory: number[] = [];
+        const historyLength = 10;
         let turnAmount = 0;
         let lastDirection: any;
 
@@ -162,17 +162,19 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
         // Sniffing variables
         let sniffingIntensity = 0;
-        let sniffingFrequency = 0;
-        let sniffingPhase = 0;
-        let lastSniffPoint: any = null;
-        let harmonics: any[] = [];
-        let sniffingSoundTimer = 0;
+        // Removed unused sniffing variables
+        // const sniffingFrequency = 0;
+        // const sniffingPhase = 0; 
+        // const lastSniffPoint: any = null;
+        // const harmonics: any[] = [];
+        // const sniffingSoundTimer = 0;
 
         // Drone variables
         let droneOsc1: any, droneOsc2: any;
-        let droneLfo: any;
-        let droneFilter: any;
-        let droneReverb: any;
+        // Removed unused drone variables
+        // let droneLfo: any;
+        // let droneFilter: any;
+        // let droneReverb: any;
         let droneDepth = 0;
 
         // Intersection variables
@@ -2053,74 +2055,102 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
           
-          // Much more subtle base frequencies
-          let baseFreq = p.map(segments[0].y, p.height, 0, 60, 120);
-          let detune = p.map(segments[0].x, 0, p.width, -2, 2); // Reduced detune range
+          // Only very occasional and subtle drone sounds
+          let droneChance = p.map(speed, 0, 10, 0.001, 0.005); // Very low probability
           
-          // More gentle evolution modulation
-          let evolutionMod = p.sin(p.frameCount * 0.005) * 0.5; // Much smaller modulation
-          
-          // Very subtle frequency changes - with safety checks
-          if (droneOsc1 && typeof droneOsc1.freq !== 'undefined') {
-            if (typeof droneOsc1.freq === 'function') {
-              droneOsc1.freq(baseFreq + evolutionMod);
-            } else {
-              droneOsc1.freq = baseFreq + evolutionMod;
+          if (p.random(1) < droneChance) {
+            // Extremely subtle base frequencies - much higher and gentler
+            let baseFreq = p.map(segments[0].y, p.height, 0, 200, 400);
+            let detune = p.map(segments[0].x, 0, p.width, -1, 1); // Minimal detune
+            
+            // Barely perceptible evolution modulation
+            let evolutionMod = p.sin(p.frameCount * 0.002) * 0.2; // Tiny modulation
+            
+            // Extremely quiet and brief sounds - more like whispers
+            let baseAmp = p.map(speed, 0, 10, 0.005, 0.001); // Much quieter
+            let whisperAmp = p.sin(p.frameCount * 0.01) * 0.002; // Whisper effect
+            
+            // Very brief sound bursts instead of continuous drones
+            if (droneOsc1 && typeof droneOsc1.freq !== 'undefined') {
+              if (typeof droneOsc1.freq === 'function') {
+                droneOsc1.freq(baseFreq + evolutionMod);
+                droneOsc1.amp(baseAmp + whisperAmp);
+              } else {
+                droneOsc1.freq = baseFreq + evolutionMod;
+                droneOsc1.amp = baseAmp + whisperAmp;
+              }
+              
+              // Turn off quickly to make it more like whispers than drones
+              setTimeout(() => {
+                if (typeof droneOsc1.amp === 'function') {
+                  droneOsc1.amp(0);
+                } else {
+                  droneOsc1.amp = 0;
+                }
+              }, p.random(50, 200)); // Very brief duration
             }
-          }
-          
-          if (droneOsc2 && typeof droneOsc2.freq !== 'undefined') {
-            if (typeof droneOsc2.freq === 'function') {
-              droneOsc2.freq(baseFreq * 1.2 + detune);
-            } else {
-              droneOsc2.freq = baseFreq * 1.2 + detune;
-            }
-          }
-           
-          // Much quieter and more nuanced amplitude
-          let baseAmp = p.map(speed, 0, 10, 0.08, 0.02); // Reduced from 0.4/0.1 to 0.08/0.02
-          let breathingAmp = p.sin(p.frameCount * 0.02) * 0.01; // Gentle breathing effect
-          
-          if (droneOsc1 && typeof droneOsc1.amp !== 'undefined') {
-            if (typeof droneOsc1.amp === 'function') {
-              droneOsc1.amp(baseAmp + breathingAmp);
-            } else {
-              droneOsc1.amp = baseAmp + breathingAmp;
-            }
-          }
-          
-          if (droneOsc2 && typeof droneOsc2.amp !== 'undefined') {
-            if (typeof droneOsc2.amp === 'function') {
-              droneOsc2.amp((baseAmp * 0.7) + (breathingAmp * 0.5));
-            } else {
-              droneOsc2.amp = (baseAmp * 0.7) + (breathingAmp * 0.5);
+            
+            // Second oscillator even more rarely
+            if (p.random(1) < 0.3 && droneOsc2 && typeof droneOsc2.freq !== 'undefined') {
+              if (typeof droneOsc2.freq === 'function') {
+                droneOsc2.freq(baseFreq * 1.1 + detune);
+                droneOsc2.amp((baseAmp * 0.3) + (whisperAmp * 0.2));
+              } else {
+                droneOsc2.freq = baseFreq * 1.1 + detune;
+                droneOsc2.amp = (baseAmp * 0.3) + (whisperAmp * 0.2);
+              }
+              
+              setTimeout(() => {
+                if (typeof droneOsc2.amp === 'function') {
+                  droneOsc2.amp(0);
+                } else {
+                  droneOsc2.amp = 0;
+                }
+              }, p.random(30, 100)); // Even briefer
             }
           }
         }
 
         function updateAmbientSound() {
-          if (!soundEnabled || evolutionState.sound < 0.1) return;
+          if (!soundEnabled || evolutionState.sound < 0.2) return;
           
           let currentTime = p.millis();
           let ambientIntensity = evolutionState.sound;
           
-          // Much more subtle ambient sounds
-          let baseAmp = p.map(ambientIntensity, 0, 1, 0.005, 0.03); // Reduced from 0.02-0.15 to 0.005-0.03
+          // Extremely rare and gentle ambient sounds - more like environmental whispers
+          let ambientChance = p.map(ambientIntensity, 0, 1, 0.0005, 0.002); // Much rarer
           
-          // Gentler volume fluctuations
-          volumeNoiseOffset += volumeNoiseSpeed * 0.5; // Slower changes
-          volumeFluctuation = p.noise(volumeNoiseOffset) * 0.1; // Reduced from 0.3 to 0.1
-          let fluctuatingAmp = baseAmp * (1 + volumeFluctuation);
-          
-          // More subtle pulsing
-          let pulsing = p.sin(currentTime * 0.0005) * 0.1 + 0.9; // Slower, gentler pulse
-          
-          // More nuanced frequency range
-          let ambientFreq = p.map(p.sin(currentTime * 0.0008), -1, 1, 180, 320); // Narrower range
-          
-          // Apply very quiet ambient tone
-          if (typeof osc !== 'undefined' && osc.amp) {
-            osc.amp(fluctuatingAmp * pulsing * 0.3); // Additional 0.3 multiplier to make even quieter
+          if (p.random(1) < ambientChance) {
+            // Much more subtle ambient sounds - like gentle wind or water
+            let baseAmp = p.map(ambientIntensity, 0, 1, 0.001, 0.008); // Much quieter
+            
+            // Very gentle fluctuations
+            volumeNoiseOffset += volumeNoiseSpeed * 0.2; // Much slower
+            volumeFluctuation = p.noise(volumeNoiseOffset) * 0.05; // Minimal fluctuation
+            let fluctuatingAmp = baseAmp * (1 + volumeFluctuation);
+            
+            // Extremely subtle pulsing - barely noticeable
+            let pulsing = p.sin(currentTime * 0.0002) * 0.05 + 0.95; // Nearly constant
+            
+            // Higher, more ethereal frequency range - less drone-like
+            let ambientFreq = p.map(p.sin(currentTime * 0.0003), -1, 1, 300, 600); // Higher frequencies
+            
+            // Apply extremely quiet ambient whisper
+            if (typeof osc !== 'undefined' && osc.amp) {
+              if (typeof osc.freq === 'function') {
+                osc.freq(ambientFreq);
+                osc.amp(fluctuatingAmp * pulsing * 0.1); // Even quieter
+              }
+              
+              // Turn off quickly to make it more like environmental sounds
+              setTimeout(() => {
+                if (typeof osc.amp === 'function') {
+                  osc.amp(0);
+                } else if (osc.amp) {
+                  osc.amp = 0;
+                }
+              }, p.random(100, 500)); // Brief whispers instead of continuous drones
+            }
           }
         }
 
