@@ -306,6 +306,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
         // Absorption particles
         let absorptionParticles: any[] = [];
+        
+        // Glow trail particles for head movement
+        let glowTrailParticles: any[] = [];
+        const maxTrailParticles = 50;
 
         // Evolution variables
         let evolutionLevel = 0;
@@ -588,6 +592,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             
             // Draw the organism with full palette system
             drawOrganism();
+            
+            // Draw glowing trail behind the head
+            updateAndDrawGlowTrail();
             
             // Update and draw food particles
             updateFoodParticles();
@@ -895,6 +902,23 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           segments[0].x = p.constrain(segments[0].x, 30, p.width - 30);
           segments[0].y = p.constrain(segments[0].y, 30, p.height - 30);
           
+          // Calculate movement speed for head glow
+          let currentSpeed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
+          let movementGlow = p.map(currentSpeed, 0, 15, 0, maxGlow * 0.8); // Much more subtle glow scaling
+          
+          // Apply movement-based glow to head - more subtle
+          headGlow = p.max(headGlow, movementGlow);
+          
+          // Add extra glow for fast movement - more subtle
+          if (currentSpeed > 5) {
+            headGlow = p.min(headGlow + currentSpeed * 0.05, maxGlow * 1.2);
+          }
+          
+          // Create glowing trail particles when moving fast - more subtle
+          if (currentSpeed > 4) {
+            createGlowTrail(segments[0].x, segments[0].y, currentSpeed, headGlow);
+          }
+          
           noiseOffsetX += p.max(noiseSpeed, 0.01);
           noiseOffsetY += p.max(noiseSpeed, 0.01);
           
@@ -1036,9 +1060,17 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.rotate(angle);
             p.noStroke();
             
-            // Simple base glow using canvas shadow
-            p.drawingContext.shadowBlur = 20 * segmentGlow;
-            p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, 0.5)`;
+            // Enhanced glow for head when moving
+            let glowIntensity = segmentGlow;
+            if (i === 0) {
+              // Head gets extra glow based on headGlow variable - more subtle
+              glowIntensity += headGlow * 0.5; // Reduce the additional glow
+              p.drawingContext.shadowBlur = 25 * (segmentGlow + headGlow * 0.6); // More subtle glow for head
+              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, ${0.2 + headGlow * 0.2})`;
+            } else {
+              p.drawingContext.shadowBlur = 20 * segmentGlow;
+              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, 0.5)`;
+            }
             
             // Make the dark body semi-transparent for better layering
             p.fill(0, 0, 0, 51);
@@ -1061,7 +1093,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                   case 3: ringColor = PALETTE.deepTeal; break;
                   case 4: ringColor = PALETTE.sand; break;
                 }
-                ringOpacity *= 1.1; // Slightly brighter head rings
+                // Head brightness increases with movement glow - more subtle
+                ringOpacity *= (1.05 + headGlow * 0.3); // Subtle brightness increase when moving
               } else {
                 // Regular body colors
                 switch(r % 5) {
@@ -1808,6 +1841,72 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                 window.digestionRings.splice(i, 1);
               }
             }
+          }
+        }
+
+        function createGlowTrail(x: number, y: number, speed: number, glow: number) {
+          // Create trail particles based on movement speed and glow - more subtle
+          let trailIntensity = p.map(speed, 4, 15, 0.2, 0.6); // Reduced intensity
+          let numParticles = Math.floor(speed * 0.3) + 1; // Fewer particles
+          
+          for (let i = 0; i < numParticles; i++) {
+            // Add some randomness to particle position
+            let offsetX = p.random(-5, 5);
+            let offsetY = p.random(-5, 5);
+            
+            glowTrailParticles.push({
+              x: x + offsetX,
+              y: y + offsetY,
+              life: 1.0,
+              maxLife: p.map(glow, 0, 3, 20, 50), // Shorter, more subtle life
+              size: p.map(speed, 4, 15, 2, 5), // Smaller particles
+              glow: glow * trailIntensity * 0.7, // Reduced glow intensity
+              fadeRate: p.map(speed, 4, 15, 0.03, 0.02) // Faster fade for more subtle effect
+            });
+          }
+          
+          // Limit number of trail particles
+          while (glowTrailParticles.length > maxTrailParticles) {
+            glowTrailParticles.shift();
+          }
+        }
+
+        function updateAndDrawGlowTrail() {
+          for (let i = glowTrailParticles.length - 1; i >= 0; i--) {
+            let particle = glowTrailParticles[i];
+            
+            // Update particle
+            particle.life -= particle.fadeRate;
+            
+            // Remove dead particles
+            if (particle.life <= 0) {
+              glowTrailParticles.splice(i, 1);
+              continue;
+            }
+            
+            // Draw glowing particle
+            let alpha = particle.life * 255;
+            let glowSize = particle.size * (1 + particle.glow * 0.5);
+            
+            p.push();
+            p.translate(particle.x, particle.y);
+            
+            // Multiple glow layers for better effect
+            for (let layer = 3; layer > 0; layer--) {
+              let layerSize = glowSize * layer * 0.8;
+              let layerAlpha = (alpha / layer) * particle.glow;
+              
+              // Use pearl color for the trail - more subtle
+              p.fill(240, 243, 245, layerAlpha * 0.2); // Reduced alpha
+              p.noStroke();
+              p.circle(0, 0, layerSize);
+            }
+            
+            // Bright core - more subtle
+            p.fill(255, 255, 255, alpha * particle.glow * 0.4); // Reduced alpha
+            p.circle(0, 0, particle.size);
+            
+            p.pop();
           }
         }
 
