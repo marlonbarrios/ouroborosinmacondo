@@ -162,18 +162,18 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
         // Sniffing variables
         let sniffingIntensity = 0;
-        // Removed unused sniffing variables
-        // const sniffingFrequency = 0;
+        let sniffingFrequency = 0;
+        // Removed other unused sniffing variables
         // const sniffingPhase = 0; 
         // const lastSniffPoint: any = null;
-        // const harmonics: any[] = [];
+        const harmonics: any[] = [];
         // const sniffingSoundTimer = 0;
 
         // Drone variables
         let droneOsc1: any, droneOsc2: any;
-        // Removed unused drone variables
+        let droneFilter: any;
+        // Removed other unused drone variables
         // let droneLfo: any;
-        // let droneFilter: any;
         // let droneReverb: any;
         let droneDepth = 0;
 
@@ -1004,6 +1004,22 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let segmentGlow = bodyGlow[i] * p.map(dayNightCycle.activityLevel, 0, 1, 0.5, 1.5);
             let glowSize = segmentLength * (1 + segmentGlow * 0.3) * organismSize;
             
+            // Enhanced head visualization - amplify the head when moving
+            if (i === 0) {
+              // Calculate movement speed for head amplification
+              let speed = 0;
+              if (i < segments.length - 1) {
+                let nextSegment = segments[i + 1];
+                speed = p.dist(segment.x, segment.y, nextSegment.x, nextSegment.y);
+              }
+              
+              // Amplify head size just slightly - more subtle
+              let headAmplification = 1.15 + p.map(speed, 0, 20, 0, 0.1); // Much smaller base amplification
+              let directionIntensity = 1 + (headGlow * 0.05); // Minimal amplification based on glow
+              glowSize *= headAmplification * directionIntensity;
+              segmentGlow *= 1.1; // Very subtle extra glow for the head
+            }
+            
             // Calculate rotation angle based on direction to next segment
             let angle = 0;
             if (i < segments.length - 1) {
@@ -1030,18 +1046,31 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.rect(0, 0, glowSize, glowSize);
             
             // Draw internal rings/squares with palette colors - all oriented in movement direction
-            let ringCount = 3;
+            let ringCount = i === 0 ? 4 : 3; // Extra ring for head
             for (let r = ringCount; r > 0; r--) {
               let ringSize = glowSize * (1 - r * 0.2);
               let ringOpacity = p.map(r, 1, ringCount, 0.8, 0.4) * colors.body.a/255;
               
               let ringColor;
-              switch(r % 5) {
-                case 0: ringColor = PALETTE.deepTeal; break;
-                case 1: ringColor = PALETTE.jade; break;
-                case 2: ringColor = PALETTE.sand; break;
-                case 3: ringColor = PALETTE.rust; break;
-                case 4: ringColor = PALETTE.pearl; break;
+              if (i === 0) {
+                // Special head colors - brighter and more prominent
+                switch(r % 5) {
+                  case 0: ringColor = PALETTE.pearl; break; // Bright center
+                  case 1: ringColor = PALETTE.jade; break;
+                  case 2: ringColor = PALETTE.rust; break;
+                  case 3: ringColor = PALETTE.deepTeal; break;
+                  case 4: ringColor = PALETTE.sand; break;
+                }
+                ringOpacity *= 1.1; // Slightly brighter head rings
+              } else {
+                // Regular body colors
+                switch(r % 5) {
+                  case 0: ringColor = PALETTE.deepTeal; break;
+                  case 1: ringColor = PALETTE.jade; break;
+                  case 2: ringColor = PALETTE.sand; break;
+                  case 3: ringColor = PALETTE.rust; break;
+                  case 4: ringColor = PALETTE.pearl; break;
+                }
               }
               
               p.fill(ringColor.r, ringColor.g, ringColor.b, ringOpacity * 255);
@@ -1050,7 +1079,12 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               if (r % 2 === 0) {
                 // Squares aligned with movement direction
                 p.rectMode(p.CENTER);
-                p.rect(0, 0, ringSize * 0.8, ringSize * 0.8);
+                if (i === 0) {
+                  // Head gets elongated rectangles to show direction
+                  p.rect(0, 0, ringSize * 1.2, ringSize * 0.6);
+                } else {
+                  p.rect(0, 0, ringSize * 0.8, ringSize * 0.8);
+                }
               } else {
                 // Circles for contrast
                 p.circle(0, 0, ringSize);
@@ -1096,14 +1130,36 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         function updateSound() {
           if (!soundEnabled || !audioStarted) return;
           
-          // More nuanced sound generation based on movement
-          if (p.frameCount % 8 === 0) { // Less frequent sound generation
+          // More interesting and varied sound generation
+          if (p.frameCount % 6 === 0) { // Slightly more frequent for variety
             let speed = p.dist(segments[0].x, segments[0].y, lastPosition.x, lastPosition.y);
+            let head = segments[0];
+            let activity = dayNightCycle.activityLevel;
             
-            if (speed > soundThreshold) {
-              makeUnderwaterSound(speed / 20); // Reduced intensity
-            } else if (p.random(1) < 0.02) { // Less frequent ambient sounds
-              makeUnderwaterSound(0.1); // Much quieter ambient
+            // Multiple sound types based on different conditions
+            let soundChance = p.map(speed, 0, 10, 0.01, 0.08);
+            
+            if (p.random() < soundChance) {
+              let soundType = p.random();
+              
+              if (soundType < 0.25) {
+                // Melodic exploration sounds
+                makeMelodicSound(head.x, head.y, speed);
+              } else if (soundType < 0.5) {
+                // Rhythmic movement sounds based on segments
+                makeRhythmicSound(speed, activity);
+              } else if (soundType < 0.75) {
+                // Textural sounds based on environment
+                makeTexturalSound(head.x, head.y);
+              } else {
+                // Enhanced underwater sounds
+                makeUnderwaterSound(speed / 15); // Slightly louder than before
+              }
+            }
+            
+            // Add spatial reverb effects occasionally
+            if (p.random() < 0.005) {
+              makeSpatialReverb(head.x, head.y);
             }
           }
         }
@@ -1127,6 +1183,79 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (osc && osc.frequency) {
             osc.frequency.setValueAtTime(baseFreq, Tone.now());
             osc.volume.setValueAtTime(-12 + (maxAmp * 12), Tone.now());
+          }
+        }
+
+        function makeMelodicSound(x: number, y: number, speed: number) {
+          if (!soundEnabled || !audioStarted || !osc) return;
+          
+          // Create melodic sequences based on position and movement
+          let baseNote = p.map(y, 0, p.height, 200, 800); // Vertical position determines base pitch
+          let harmony = p.map(x, 0, p.width, 0.8, 1.2); // Horizontal position creates harmony
+          let rhythm = p.map(speed, 0, 10, 0.5, 2); // Speed affects rhythm
+          
+          // Create a short melodic phrase
+          let notes = [baseNote, baseNote * harmony, baseNote * 1.25, baseNote * harmony * 0.75];
+          let noteIndex = Math.floor(p.frameCount / 15) % notes.length;
+          
+          if (osc && osc.frequency) {
+            osc.frequency.setValueAtTime(notes[noteIndex], Tone.now());
+            osc.volume.setValueAtTime(-15 + (rhythm * 3), Tone.now());
+          }
+        }
+
+        function makeRhythmicSound(speed: number, activity: number) {
+          if (!soundEnabled || !audioStarted || !clickOsc) return;
+          
+          // Create rhythmic patterns based on movement and activity
+          let beatPattern = [1, 0, 1, 0, 1, 1, 0, 1]; // 8-beat pattern
+          let beatIndex = Math.floor(p.frameCount / 8) % beatPattern.length;
+          
+          if (beatPattern[beatIndex] === 1) {
+            let freq = p.map(speed, 0, 10, 150, 400);
+            let intensity = p.map(activity, 0, 1, 0.3, 0.8);
+            
+            if (clickOsc && clickOsc.frequency) {
+              clickOsc.frequency.setValueAtTime(freq, Tone.now());
+              clickOsc.volume.setValueAtTime(-20 + (intensity * 8), Tone.now());
+            }
+          }
+        }
+
+        function makeTexturalSound(x: number, y: number) {
+          if (!soundEnabled || !audioStarted || !squeakOsc) return;
+          
+          // Create textural sounds based on environment and position
+          let texture = p.noise(x * 0.01, y * 0.01, p.frameCount * 0.01);
+          let freq = p.map(texture, 0, 1, 100, 600);
+          let grain = p.map(texture, 0, 1, 0.1, 0.9);
+          
+          if (squeakOsc && squeakOsc.frequency) {
+            squeakOsc.frequency.setValueAtTime(freq + p.sin(p.frameCount * 0.1) * 20, Tone.now());
+            squeakOsc.volume.setValueAtTime(-18 + (grain * 6), Tone.now());
+          }
+        }
+
+        function makeSpatialReverb(x: number, y: number) {
+          if (!soundEnabled || !audioStarted) return;
+          
+          // Create spatial echo effects based on position
+          let delay = p.map(x, 0, p.width, 0.1, 0.5);
+          let feedback = p.map(y, 0, p.height, 0.2, 0.6);
+          let freq = p.map(p.dist(x, y, p.width/2, p.height/2), 0, p.width/2, 400, 800);
+          
+          // Use available oscillator for reverb effect
+          if (osc && osc.frequency) {
+            // Create a brief echo-like sound
+            osc.frequency.setValueAtTime(freq, Tone.now());
+            osc.volume.setValueAtTime(-22, Tone.now());
+            
+            // Quick fade for echo effect
+            setTimeout(() => {
+              if (osc && osc.volume) {
+                osc.volume.setValueAtTime(-40, Tone.now());
+              }
+            }, delay * 200);
           }
         }
 
@@ -1273,14 +1402,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.fill(255, 255, 255, storyOpacity);
             p.text(currentStoryText, tickerX, p.height - 50);
             
-            // Animate ticker
-            tickerX -= 2;
+            // Animate ticker - slower speed
+            tickerX -= 0.8;
             if (tickerX < -p.textWidth(currentStoryText)) {
               tickerX = p.width;
             }
             
-            // Slower fade out for better readability
-            storyOpacity = p.max(0, storyOpacity - 0.2);
+            // Keep text visible - no fade out
+            // storyOpacity = p.max(0, storyOpacity - 0.2);
           }
         }
 
@@ -1331,11 +1460,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           p.strokeWeight(2);
           p.rect(buttonX, buttonY, buttonWidth, buttonHeight, 5);
           
-          // Button text with high contrast
-          p.fill(240, 243, 245); // Bright pearl color
+          // Button text with lighter appearance using stroke
+          p.noFill();
+          p.stroke(240, 243, 245); // Bright pearl color as stroke
+          p.strokeWeight(1); // Thin stroke for lighter appearance
           p.textAlign(p.CENTER, p.CENTER);
-          p.textSize(18);
-          p.textStyle(p.BOLD);
+          p.textSize(16); // Larger size for better readability
+          p.textStyle(p.NORMAL);
           p.text(selectedLanguage, buttonX + buttonWidth/2, buttonY + buttonHeight/2);
           
           // Draw dropdown
@@ -1361,7 +1492,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               p.fill(240, 243, 245); // Bright pearl color
               p.textAlign(p.CENTER, p.CENTER);
               p.textSize(16);
-              p.textStyle(p.BOLD);
+              p.textStyle(p.NORMAL); // Changed from BOLD to NORMAL
               p.text(languages[i], buttonX + buttonWidth/2, itemY + itemHeight/2);
             }
           }
@@ -2067,8 +2198,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let evolutionMod = p.sin(p.frameCount * 0.002) * 0.2; // Tiny modulation
             
             // Extremely quiet and brief sounds - more like whispers
-            let baseAmp = p.map(speed, 0, 10, 0.005, 0.001); // Much quieter
-            let whisperAmp = p.sin(p.frameCount * 0.01) * 0.002; // Whisper effect
+            let baseAmp = p.map(speed, 0, 10, 0.001, 0.0005); // Even quieter
+            let whisperAmp = p.sin(p.frameCount * 0.01) * 0.0005; // Softer whisper effect
             
             // Very brief sound bursts instead of continuous drones
             if (droneOsc1 && typeof droneOsc1.freq !== 'undefined') {
@@ -2094,10 +2225,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             if (p.random(1) < 0.3 && droneOsc2 && typeof droneOsc2.freq !== 'undefined') {
               if (typeof droneOsc2.freq === 'function') {
                 droneOsc2.freq(baseFreq * 1.1 + detune);
-                droneOsc2.amp((baseAmp * 0.3) + (whisperAmp * 0.2));
+                droneOsc2.amp((baseAmp * 0.1) + (whisperAmp * 0.1));
               } else {
                 droneOsc2.freq = baseFreq * 1.1 + detune;
-                droneOsc2.amp = (baseAmp * 0.3) + (whisperAmp * 0.2);
+                droneOsc2.amp = (baseAmp * 0.1) + (whisperAmp * 0.1);
               }
               
               setTimeout(() => {
