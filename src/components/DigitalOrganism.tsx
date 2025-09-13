@@ -408,7 +408,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                 decay: 0.2,
                 sustain: 0.2,
                 release: 0.5
-              }
+              },
+              volume: -20 // Safe volume setting
             }).connect(reverb);
             
             // Ouroboros sound - a mystical chord
@@ -419,7 +420,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                 decay: 0.3,
                 sustain: 0.4,
                 release: 1
-              }
+              },
+              volume: -25 // Safe volume setting
             }).connect(reverb);
             
             console.log('Audio system initialized');
@@ -1667,6 +1669,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (now - lastIntersectionSound > minIntersectionSoundInterval) {
             let baseFreq = p.random([220, 330, 440, 550]);
             if (intersectionSound) {
+              // Set safe volume before triggering
+              intersectionSound.volume.value = p.constrain(-20, -40, 0);
               intersectionSound.triggerAttackRelease(baseFreq, "16n");
             }
             lastIntersectionSound = now;
@@ -1692,6 +1696,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           
           if (soundEnabled && audioStarted && p.millis() - lastOuroborosSound > 1000) {
             if (ouroborosSound) {
+              // Set safe volume before triggering
+              ouroborosSound.volume.value = p.constrain(-25, -40, 0);
               ouroborosSound.triggerAttackRelease(['C4', 'E4', 'G4', 'B4'], '2n');
             }
             lastOuroborosSound = p.millis();
