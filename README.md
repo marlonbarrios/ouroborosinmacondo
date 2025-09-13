@@ -2,6 +2,12 @@
 
 *A digital organism swimming through García Márquez's magical realism, exploring epistemic recursion with AI-generated stories*
 
+## 🌐 Live Application
+
+**Experience the digital ouroboros:** [https://ouroborosinmacondo.vercel.app/](https://ouroborosinmacondo.vercel.app/)
+
+*Interact with the AI-powered organism in real-time through your browser*
+
 ## ✨ Overview
 
 **Ouroboros in Macondo** is an interactive digital art piece that combines:
