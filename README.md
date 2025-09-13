@@ -35,12 +35,14 @@ The digital ouroboros moves organically through a canvas representing Macondo, g
 
 ## 🧠 AI Story Generation
 
-Stories are generated in real-time based on:
+Stories are generated using **OpenAI GPT-3.5 Turbo** in real-time based on:
 - **Creature Activity**: Movement patterns influence narrative themes
 - **Epistemic Themes**: Exploration of knowledge, recursion, and magic
 - **Magical Realism**: Impossible natural phenomena, time distortions, crystallized sighs
 - **Decolonial Perspective**: First-person narratives from the ouroboros's viewpoint
 - **Macondo Context**: References to García Márquez's fictional town
+
+*Note: The application uses OpenAI API, not Fal.ai, despite any UI references to Fal.ai models.*
 
 ### Supported Languages
 English, Spanish, French, Portuguese, Italian, German, Dutch, Russian, Japanese, Chinese
@@ -64,7 +66,7 @@ English, Spanish, French, Portuguese, Italian, German, Dutch, Russian, Japanese,
 
 ### Prerequisites
 - Node.js 18+
-- OpenAI API key
+- OpenAI API key (not Fal.ai)
 
 ### Setup
 ```bash
@@ -75,7 +77,7 @@ cd ouroborosinmacondo
 # Install dependencies
 npm install
 
-# Set up environment variables
+# Set up environment variables (OpenAI, not Fal.ai)
 echo "OPENAI_API_KEY=your_openai_api_key_here" > .env.local
 
 # Run development server
