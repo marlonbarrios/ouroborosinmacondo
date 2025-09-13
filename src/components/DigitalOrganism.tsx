@@ -46,7 +46,15 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Japanese', 'Chinese', 'Arabic', 'Russian'];
 
         // Activity detection variables
-        const activityDetector = {
+        const activityDetector: {
+            lastPosition: any | null,
+            movementHistory: number[],
+            currentState: string,
+            stateStartTime: number,
+            restingThreshold: number,
+            exploringThreshold: number,
+            huntingThreshold: number
+        } = {
             lastPosition: null,
             movementHistory: [],
             currentState: 'wandering',
@@ -1828,9 +1836,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function updateDigestionEffects() {
-          if (typeof window !== 'undefined' && window.digestionRings) {
-            for (let i = window.digestionRings.length - 1; i >= 0; i--) {
-              let ring = window.digestionRings[i];
+          if (typeof window !== 'undefined' && (window as any).digestionRings) {
+            for (let i = (window as any).digestionRings.length - 1; i >= 0; i--) {
+              let ring = (window as any).digestionRings[i];
               
               // Draw expanding ring
               p.noFill();
@@ -1844,7 +1852,7 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               
               // Remove faded rings
               if (ring.alpha < 5) {
-                window.digestionRings.splice(i, 1);
+                (window as any).digestionRings.splice(i, 1);
               }
             }
           }
@@ -2214,30 +2222,6 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           };
         }
 
-        function updateTimeOfDay() {
-          let currentTime = new Date();
-          dayNightCycle.hour = currentTime.getHours();
-          let minutes = currentTime.getMinutes();
-          
-          let timeProgress = (dayNightCycle.hour * 60 + minutes) / 1440;
-          let hourAngle = ((timeProgress * 24 - 2) / 24) * p.TWO_PI;
-          
-          dayNightCycle.brightness = p.map(
-            p.sin(hourAngle), 
-            -1, 1, 
-            dayNightCycle.minBrightness, 
-            dayNightCycle.maxBrightness
-          );
-          
-          let nightBonus = (dayNightCycle.hour >= 22 || dayNightCycle.hour <= 4) ? 0.3 : 0;
-          dayNightCycle.activityLevel = p.map(
-            -p.sin(hourAngle), 
-            -1, 1, 
-            dayNightCycle.minActivity, 
-            dayNightCycle.maxActivity
-          ) + nightBonus;
-        }
-
         function updateTimeBasedBehavior() {
           let hour = new Date().getHours();
           let isNight = (hour >= 0 && hour < 6) || (hour >= 20);
@@ -2413,48 +2397,6 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           else activity = 'High';
         }
 
-        function drawTrail() {
-          if (trail.length < 2) return;
-          
-          p.noFill();
-          for (let i = 0; i < trail.length - 1; i++) {
-            let trailColor = getTrailColor();
-            let opacity = trailOpacity[i] * 255;
-            
-            p.stroke(
-              trailColor.r,
-              trailColor.g,
-              trailColor.b,
-              opacity * 0.6
-            );
-            
-            let sw = trailWidth * (1 - i/trail.length) * trailOpacity[i] * 0.1;
-            p.strokeWeight(sw);
-            
-            p.line(
-              trail[i].x,
-              trail[i].y,
-              trail[i + 1].x,
-              trail[i + 1].y
-            );
-            
-            // Add glow effect
-            p.stroke(
-              trailColor.r,
-              trailColor.g,
-              trailColor.b,
-              opacity * 0.3
-            );
-            p.strokeWeight(sw * 1.8);
-            p.line(
-              trail[i].x,
-              trail[i].y,
-              trail[i + 1].x,
-              trail[i + 1].y
-            );
-          }
-        }
-
         function getTrailColor() {
           let colors = getOrganismColor();
           let timeOfDay = new Date().getHours();
@@ -2514,7 +2456,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
       };
 
-      p5InstanceRef.current = new p5(sketch, sketchRef.current);
+      if (sketchRef.current) {
+        p5InstanceRef.current = new p5(sketch, sketchRef.current);
+      }
     };
 
     loadLibraries();
