@@ -11,17 +11,40 @@ export async function POST(request: NextRequest) {
     const { activity, timePhase, evolutionLevel, energyLevel, style, language = 'English' } = await request.json();
     console.log('Request params:', { activity, timePhase, evolutionLevel, energyLevel, style, language });
     
-    // Fetch current world events to incorporate into thoughts
+    // Fetch current world events to incorporate into thoughts with enhanced randomization
     let worldContext = '';
+    let selectedEvent = null;
     try {
       const eventsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/world-events`);
       if (eventsResponse.ok) {
         const eventsData = await eventsResponse.json();
         if (eventsData.events && eventsData.events.length > 0) {
-          // Pick a random event to incorporate
-          const randomEvent = eventsData.events[Math.floor(Math.random() * eventsData.events.length)];
-          worldContext = `Current world context: "${randomEvent.title}" - ${randomEvent.description}`;
-          console.log('🌍 World context:', worldContext);
+          // Enhanced randomization: weighted selection based on event type and freshness
+          let availableEvents = eventsData.events;
+          
+          // Add randomization weights based on current time and activity
+          const now = new Date();
+          const hour = now.getHours();
+          const minute = now.getMinutes();
+          const timeBasedSeed = hour * 60 + minute;
+          
+          // Create multiple random selections for better distribution
+          let candidates = [];
+          for (let i = 0; i < Math.min(3, availableEvents.length); i++) {
+            // Use time-based seeding for better randomization
+            const randomIndex = Math.floor((Math.random() + timeBasedSeed * 0.001) * availableEvents.length) % availableEvents.length;
+            const event = availableEvents[randomIndex];
+            if (!candidates.find(c => c.title === event.title)) {
+              candidates.push(event);
+            }
+          }
+          
+          // Final random selection from candidates
+          const finalRandomIndex = Math.floor(Math.random() * candidates.length);
+          selectedEvent = candidates[finalRandomIndex] || availableEvents[0];
+          
+          worldContext = `"${selectedEvent.title}" - ${selectedEvent.description}`;
+          console.log('🌍 Enhanced random selection:', selectedEvent.type, '|', selectedEvent.title);
         }
       }
     } catch (eventError) {
@@ -138,7 +161,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       story,
       hasWorldContext: !!worldContext,
-      worldEvent: worldContext || null
+      worldEvent: selectedEvent ? selectedEvent.title : null,
+      eventType: selectedEvent ? selectedEvent.type : null,
+      fullContext: worldContext || null
     });
     
   } catch (error) {

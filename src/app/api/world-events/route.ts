@@ -124,17 +124,57 @@ export async function GET(request: NextRequest) {
         }
       ];
       
-      // Randomly select 3-5 events for variety
-      const numEvents = 3 + Math.floor(Math.random() * 3);
+      // Enhanced randomization for better event variety
+      const numEvents = 4 + Math.floor(Math.random() * 4); // 4-7 events for more variety
       events = [];
       const usedIndices = new Set();
       
+      // First, ensure we have at least one of each major type
+      const eventTypes = ['temporal', 'political', 'philosophical', 'social'];
+      const guaranteedEvents = [];
+      
+      for (let type of eventTypes) {
+        const typeEvents = dynamicEvents.filter(e => e.type === type);
+        if (typeEvents.length > 0) {
+          const randomTypeEvent = typeEvents[Math.floor(Math.random() * typeEvents.length)];
+          const originalIndex = dynamicEvents.indexOf(randomTypeEvent);
+          if (!usedIndices.has(originalIndex)) {
+            guaranteedEvents.push(randomTypeEvent);
+            usedIndices.add(originalIndex);
+          }
+        }
+      }
+      
+      events.push(...guaranteedEvents);
+      
+      // Fill remaining slots with completely random selection
       while (events.length < numEvents && usedIndices.size < dynamicEvents.length) {
-        const randomIndex = Math.floor(Math.random() * dynamicEvents.length);
+        // Use multiple randomization methods for better distribution
+        let randomIndex;
+        const method = Math.floor(Math.random() * 3);
+        
+        switch (method) {
+          case 0: // Pure random
+            randomIndex = Math.floor(Math.random() * dynamicEvents.length);
+            break;
+          case 1: // Time-seeded random
+            randomIndex = Math.floor((Math.random() + now.getMinutes() * 0.01) * dynamicEvents.length) % dynamicEvents.length;
+            break;
+          case 2: // Hash-based random
+            randomIndex = Math.floor((Math.random() + Math.sin(now.getTime() * 0.001) * 0.5 + 0.5) * dynamicEvents.length) % dynamicEvents.length;
+            break;
+        }
+        
         if (!usedIndices.has(randomIndex)) {
           events.push(dynamicEvents[randomIndex]);
           usedIndices.add(randomIndex);
         }
+      }
+      
+      // Shuffle the final events array for random ordering
+      for (let i = events.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [events[i], events[j]] = [events[j], events[i]];
       }
     }
 

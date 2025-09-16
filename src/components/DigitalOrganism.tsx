@@ -1629,60 +1629,58 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               }
               p.rect(0, p.height - 100, p.width, 80);
               
-              // Draw world event indicator if present
-              if (currentStoryHasWorldContext) {
-                // Draw prominent world indicator
-                p.fill(100, 255, 100, storyOpacity * 0.8); // Brighter green world indicator
-                p.textSize(24);
-                p.textAlign(p.LEFT, p.CENTER);
-                p.text('🌍 WORLD EVENT', 20, p.height - 70);
-                
-                // Draw pulsing effect around world icon
-                p.noFill();
-                p.stroke(100, 255, 100, storyOpacity * 0.4);
-                p.strokeWeight(2);
-                let pulseSize = 15 + p.sin(p.millis() * 0.01) * 5;
-                p.ellipse(35, p.height - 70, pulseSize, pulseSize);
-                
-                // Show the actual world event description - FULL TITLE
-                if (currentWorldEvent) {
-                  p.fill(150, 255, 150, storyOpacity * 0.7);
-                  p.textSize(14);
-                  p.textAlign(p.LEFT, p.CENTER);
-                  
-                  // Display the complete event title without truncation
-                  let fullEventText = `Event: ${currentWorldEvent}`;
-                  let maxWidth = p.width - 40; // Leave 20px margin on each side
-                  
-                  // Check if text fits on one line
-                  p.textSize(14);
-                  if (p.textWidth(fullEventText) <= maxWidth) {
-                    // Single line - display normally
-                    p.text(fullEventText, 20, p.height - 30);
-                  } else {
-                    // Multi-line - wrap text to show full title
-                    let words = fullEventText.split(' ');
-                    let lines = [];
-                    let currentLine = '';
-                    
-                    for (let word of words) {
-                      let testLine = currentLine + (currentLine ? ' ' : '') + word;
-                      if (p.textWidth(testLine) <= maxWidth) {
-                        currentLine = testLine;
-                      } else {
-                        if (currentLine) lines.push(currentLine);
-                        currentLine = word;
-                      }
-                    }
-                    if (currentLine) lines.push(currentLine);
-                    
-                    // Draw each line
-                    for (let i = 0; i < lines.length; i++) {
-                      p.text(lines[i], 20, p.height - 45 + (i * 16));
-                    }
-                  }
-                }
-              }
+               // Draw world event indicator if present
+               if (currentStoryHasWorldContext) {
+                 // Draw elegant world indicator
+                 p.fill(120, 200, 120, storyOpacity * 0.9);
+                 p.textSize(16);
+                 p.textAlign(p.LEFT, p.CENTER);
+                 p.text('WORLD EVENT', 20, p.height - 70);
+                 
+                 // Draw subtle underline
+                 p.noFill();
+                 p.stroke(120, 200, 120, storyOpacity * 0.6);
+                 p.strokeWeight(1);
+                 p.line(20, p.height - 65, 20 + p.textWidth('WORLD EVENT'), p.height - 65);
+                 
+                 // Show the actual world event description - FULL TITLE
+                 if (currentWorldEvent) {
+                   p.fill(180, 220, 180, storyOpacity * 0.8);
+                   p.textSize(15);
+                   p.textAlign(p.LEFT, p.CENTER);
+                   
+                   // Display the complete event title without truncation (no "Event:" prefix)
+                   let fullEventText = currentWorldEvent;
+                   let maxWidth = p.width - 40; // Leave 20px margin on each side
+                   
+                   // Check if text fits on one line
+                   if (p.textWidth(fullEventText) <= maxWidth) {
+                     // Single line - display normally
+                     p.text(fullEventText, 20, p.height - 45);
+                   } else {
+                     // Multi-line - wrap text to show full title
+                     let words = fullEventText.split(' ');
+                     let lines = [];
+                     let currentLine = '';
+                     
+                     for (let word of words) {
+                       let testLine = currentLine + (currentLine ? ' ' : '') + word;
+                       if (p.textWidth(testLine) <= maxWidth) {
+                         currentLine = testLine;
+                       } else {
+                         if (currentLine) lines.push(currentLine);
+                         currentLine = word;
+                       }
+                     }
+                     if (currentLine) lines.push(currentLine);
+                     
+                     // Draw each line with better spacing
+                     for (let i = 0; i < lines.length; i++) {
+                       p.text(lines[i], 20, p.height - 50 + (i * 18));
+                     }
+                   }
+                 }
+               }
               
               // Draw text with enhanced visibility
               p.textSize(28);
@@ -1733,39 +1731,43 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           }
         };
 
-        function drawWorldEventsStatus() {
-          // Draw world events monitoring status in top-left corner
-          let statusX = 20;
-          let statusY = 20;
-          let statusWidth = 200;
-          let statusHeight = 30;
-          
-          // Background for status
-          p.noStroke();
-          p.fill(0, 0, 0, 150);
-          p.rect(statusX, statusY, statusWidth, statusHeight, 5);
-          
-          // Status indicator
-          let pulseAlpha = (p.sin(p.millis() * 0.005) + 1) * 0.5; // Pulsing effect
-          if (currentStoryHasWorldContext) {
-            // Active world event - bright green pulsing
-            p.fill(100, 255, 100, 200 + pulseAlpha * 55);
-          } else {
-            // Monitoring but no current event - dim green
-            p.fill(100, 150, 100, 120);
-          }
-          p.circle(statusX + 15, statusY + 15, 8);
-          
-          // Status text
-          p.fill(255, 255, 255, 220);
-          p.textSize(12);
-          p.textAlign(p.LEFT, p.CENTER);
-          if (currentStoryHasWorldContext) {
-            p.text('🌍 World Event Active', statusX + 25, statusY + 15);
-          } else {
-            p.text('🌍 World Monitoring', statusX + 25, statusY + 15);
-          }
-        }
+         function drawWorldEventsStatus() {
+           // Draw world events monitoring status in top-left corner
+           let statusX = 20;
+           let statusY = 20;
+           let statusWidth = 180;
+           let statusHeight = 30;
+           
+           // Background for status with subtle border
+           p.noFill();
+           p.stroke(255, 255, 255, 60);
+           p.strokeWeight(1);
+           p.rect(statusX, statusY, statusWidth, statusHeight, 5);
+           
+           p.noStroke();
+           p.fill(0, 0, 0, 120);
+           p.rect(statusX, statusY, statusWidth, statusHeight, 5);
+           
+           // Status indicator - subtle dot
+           if (currentStoryHasWorldContext) {
+             // Active world event - steady green
+             p.fill(120, 200, 120, 255);
+           } else {
+             // Monitoring but no current event - dim gray
+             p.fill(120, 120, 120, 150);
+           }
+           p.circle(statusX + 12, statusY + 15, 6);
+           
+           // Status text - clean typography
+           p.fill(255, 255, 255, 200);
+           p.textSize(11);
+           p.textAlign(p.LEFT, p.CENTER);
+           if (currentStoryHasWorldContext) {
+             p.text('WORLD EVENT ACTIVE', statusX + 22, statusY + 15);
+           } else {
+             p.text('WORLD MONITORING', statusX + 22, statusY + 15);
+           }
+         }
 
         function drawLanguageDropdown() {
           let buttonX = p.width - 160;
