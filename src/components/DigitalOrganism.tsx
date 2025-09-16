@@ -28,17 +28,26 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         let storyDisplay: any;
         let storyText: any;
         let lastStoryTime = 0;
-        const storyInterval = 30000; // Generate story every 30 seconds
+        const storyInterval = 45000; // Generate story every 45 seconds (reduced frequency since we have behavior-triggered generation)
         let currentActivity = 'wandering';
+        let previousActivity = 'wandering';
         let activityHistory: any[] = [];
         let storyQueue: any[] = [];
         let isGeneratingStory = false;
+        let lastActivityChangeTime = 0;
+        let lastCollisionTime = 0;
+        let lastTargetReachedTime = 0;
 
         // Story variables for display
         let currentStoryText = '';
         let storyOpacity = 0;
         let tickerX = 0;
         const storiesStarted = true; // Auto-start
+        let storyStartTime = 0;
+        let storyDisplayDuration = 30000; // 30 seconds
+        let storyFadeSpeed = 3; // Speed of fade in/out
+        let currentStoryHasWorldContext = false;
+        let currentWorldEvent: string | null = null;
         
         // Language variables
         let selectedLanguage = 'English';
@@ -132,15 +141,15 @@ export default function DigitalOrganism({ className = '' }: { className?: string
 
         // Glow variables
         let headGlow = 0;
-        let maxGlow = 1.5;
-        let glowDecay = 0.95;
+        let maxGlow = 0.3; // Much more subtle glow
+        let glowDecay = 0.98; // Faster decay
         let edgeGlowDistance = 200;
         let edgeIntensity = 0;
 
         // Body glow variables
         let bodyGlow: number[] = [];
-        let maxBodyGlow = 2.0;
-        let bodyGlowDecay = 0.97;
+        let maxBodyGlow = 0.5; // Much more subtle body glow
+        let bodyGlowDecay = 0.95; // Faster decay
 
         // Click variables
         let clickOsc: any;
@@ -205,9 +214,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         let trail: any[] = [];
         let trailLength = 300;
         let trailOpacity: number[] = [];
-        let trailDecay = 0.997;
-        let trailWidth = 100;
-        let trailSpread = 2;
+        let trailDecay = 0.99; // Faster decay for more subtle trails
+        let trailWidth = 30; // Much smaller trail width
+        let trailSpread = 1; // Less spread
 
         // Nutrient variables
         let nutrients: any[] = [];
@@ -596,8 +605,19 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Evolve complexity over time
             evolveComplexity();
             
-            // Detect current activity
+            // Detect current activity and trigger story generation on behavior change
+            previousActivity = currentActivity;
             currentActivity = detectActivity();
+            
+            // Trigger story generation when behavior changes
+            if (currentActivity !== previousActivity) {
+              lastActivityChangeTime = p.millis();
+              // Generate story immediately on behavior change (with small delay to avoid spam)
+              if (p.millis() - lastStoryTime > 3000) { // At least 3 seconds between stories
+                generateStory();
+                lastStoryTime = p.millis();
+              }
+            }
             
             // Update time-based behavior
             updateTimeBasedBehavior();
@@ -660,6 +680,9 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             
             // Draw language dropdown
             drawLanguageDropdown();
+            
+            // Draw world events status indicator
+            drawWorldEventsStatus();
             
             // Auto-generate stories
             if (storiesStarted && p.millis() - lastStoryTime > storyInterval) {
@@ -906,18 +929,48 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           // Left boundary
           if (head.x < buffer) {
             boundaryForce.x += strength * (buffer - head.x) / buffer;
+            if (head.x < 30 && p.millis() - lastCollisionTime > 5000) {
+              lastCollisionTime = p.millis();
+              console.log('🐍 💥 Boundary collision detected - triggering pain/frustration thought');
+              // Trigger "pain" or "frustration" thought
+              if (p.millis() - lastStoryTime > 3000) {
+                generateStory();
+                lastStoryTime = p.millis();
+              }
+            }
           }
           // Right boundary  
           if (head.x > p.width - buffer) {
             boundaryForce.x -= strength * (head.x - (p.width - buffer)) / buffer;
+            if (head.x > p.width - 30 && p.millis() - lastCollisionTime > 5000) {
+              lastCollisionTime = p.millis();
+              if (p.millis() - lastStoryTime > 3000) {
+                generateStory();
+                lastStoryTime = p.millis();
+              }
+            }
           }
           // Top boundary
           if (head.y < buffer) {
             boundaryForce.y += strength * (buffer - head.y) / buffer;
+            if (head.y < 30 && p.millis() - lastCollisionTime > 5000) {
+              lastCollisionTime = p.millis();
+              if (p.millis() - lastStoryTime > 3000) {
+                generateStory();
+                lastStoryTime = p.millis();
+              }
+            }
           }
           // Bottom boundary
           if (head.y > p.height - buffer) {
             boundaryForce.y -= strength * (head.y - (p.height - buffer)) / buffer;
+            if (head.y > p.height - 30 && p.millis() - lastCollisionTime > 5000) {
+              lastCollisionTime = p.millis();
+              if (p.millis() - lastStoryTime > 3000) {
+                generateStory();
+                lastStoryTime = p.millis();
+              }
+            }
           }
           
           // Apply boundary force to target
@@ -1108,13 +1161,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             // Enhanced glow for head when moving
             let glowIntensity = segmentGlow;
             if (i === 0) {
-              // Head gets extra glow based on headGlow variable - more subtle
-              glowIntensity += headGlow * 0.5; // Reduce the additional glow
-              p.drawingContext.shadowBlur = 25 * (segmentGlow + headGlow * 0.6); // More subtle glow for head
-              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, ${0.2 + headGlow * 0.2})`;
+              // Head gets extra glow based on headGlow variable - much more subtle
+              glowIntensity += headGlow * 0.2; // Much less additional glow
+              p.drawingContext.shadowBlur = 8 * (segmentGlow + headGlow * 0.3); // Much more subtle glow for head
+              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, ${0.1 + headGlow * 0.1})`;
             } else {
-              p.drawingContext.shadowBlur = 20 * segmentGlow;
-              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, 0.5)`;
+              p.drawingContext.shadowBlur = 5 * segmentGlow; // Much more subtle body glow
+              p.drawingContext.shadowColor = `rgba(${colors.glow.r}, ${colors.glow.g}, ${colors.glow.b}, 0.2)`;
             }
             
             // Make the dark body semi-transparent for better layering
@@ -1546,32 +1599,78 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function drawStoryTicker() {
-          if (currentStoryText && storyOpacity > 0) {
-            // Draw background bar for better text visibility - more transparent
-            p.noStroke();
-            p.fill(0, 0, 0, 80); // Much more transparent
-            p.rect(0, p.height - 80, p.width, 60);
+          if (currentStoryText) {
+            // Handle fade in/out timing
+            let timeSinceStoryStart = p.millis() - storyStartTime;
             
-            // Draw text with white color and shadow for maximum visibility
-            p.textSize(24);
-            p.textAlign(p.LEFT, p.CENTER);
-            
-            // Draw text shadow
-            p.fill(0, 0, 0, storyOpacity * 0.8);
-            p.text(currentStoryText, tickerX + 2, p.height - 50 + 2);
-            
-            // Draw main text in bright white
-            p.fill(255, 255, 255, storyOpacity);
-            p.text(currentStoryText, tickerX, p.height - 50);
-            
-            // Animate ticker - 30% faster speed
-            tickerX -= 1.04;
-            if (tickerX < -p.textWidth(currentStoryText)) {
-              tickerX = p.width;
+            if (timeSinceStoryStart < 1000) {
+              // Fade in during first 1 second
+              storyOpacity = p.map(timeSinceStoryStart, 0, 1000, 0, 255);
+            } else if (timeSinceStoryStart < storyDisplayDuration - 1000) {
+              // Stay fully visible for most of the duration
+              storyOpacity = 255;
+            } else if (timeSinceStoryStart < storyDisplayDuration) {
+              // Fade out during last 1 second
+              storyOpacity = p.map(timeSinceStoryStart, storyDisplayDuration - 1000, storyDisplayDuration, 255, 0);
+            } else {
+              // Story has expired, hide it
+              storyOpacity = 0;
+              currentStoryText = '';
             }
             
-            // Keep text visible - no fade out
-            // storyOpacity = p.max(0, storyOpacity - 0.2);
+            if (storyOpacity > 0) {
+              // Draw background bar for better text visibility
+              p.noStroke();
+              if (currentStoryHasWorldContext) {
+                // Green-tinted background for world events
+                p.fill(0, 40, 0, 120); // Dark green background
+              } else {
+                p.fill(0, 0, 0, 80); // Regular dark background
+              }
+              p.rect(0, p.height - 100, p.width, 80);
+              
+              // Draw world event indicator if present
+              if (currentStoryHasWorldContext) {
+                // Draw prominent world indicator
+                p.fill(100, 255, 100, storyOpacity * 0.8); // Brighter green world indicator
+                p.textSize(24);
+                p.textAlign(p.LEFT, p.CENTER);
+                p.text('🌍 WORLD EVENT', 20, p.height - 70);
+                
+                // Draw pulsing effect around world icon
+                p.noFill();
+                p.stroke(100, 255, 100, storyOpacity * 0.4);
+                p.strokeWeight(2);
+                let pulseSize = 15 + p.sin(p.millis() * 0.01) * 5;
+                p.ellipse(35, p.height - 70, pulseSize, pulseSize);
+                
+                // Show the actual world event description
+                if (currentWorldEvent) {
+                  p.fill(150, 255, 150, storyOpacity * 0.7);
+                  p.textSize(14);
+                  p.textAlign(p.LEFT, p.CENTER);
+                  let eventText = currentWorldEvent.length > 60 ? 
+                    currentWorldEvent.substring(0, 60) + "..." : currentWorldEvent;
+                  p.text(`Event: ${eventText}`, 20, p.height - 30);
+                }
+              }
+              
+              // Draw text with enhanced visibility
+              p.textSize(28);
+              p.textAlign(p.CENTER, p.CENTER);
+              
+              // Draw text shadow
+              p.fill(0, 0, 0, storyOpacity * 0.9);
+              p.text(currentStoryText, p.width/2 + 3, p.height - 60 + 3);
+              
+              // Draw main text - enhanced colors based on world context
+              if (currentStoryHasWorldContext) {
+                p.fill(150, 255, 150, storyOpacity); // Brighter green for world-aware thoughts
+              } else {
+                p.fill(255, 255, 255, storyOpacity); // Pure white for existential thoughts
+              }
+              p.text(currentStoryText, p.width/2, p.height - 60);
+            }
           }
         }
 
@@ -1604,6 +1703,40 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             }
           }
         };
+
+        function drawWorldEventsStatus() {
+          // Draw world events monitoring status in top-left corner
+          let statusX = 20;
+          let statusY = 20;
+          let statusWidth = 200;
+          let statusHeight = 30;
+          
+          // Background for status
+          p.noStroke();
+          p.fill(0, 0, 0, 150);
+          p.rect(statusX, statusY, statusWidth, statusHeight, 5);
+          
+          // Status indicator
+          let pulseAlpha = (p.sin(p.millis() * 0.005) + 1) * 0.5; // Pulsing effect
+          if (currentStoryHasWorldContext) {
+            // Active world event - bright green pulsing
+            p.fill(100, 255, 100, 200 + pulseAlpha * 55);
+          } else {
+            // Monitoring but no current event - dim green
+            p.fill(100, 150, 100, 120);
+          }
+          p.circle(statusX + 15, statusY + 15, 8);
+          
+          // Status text
+          p.fill(255, 255, 255, 220);
+          p.textSize(12);
+          p.textAlign(p.LEFT, p.CENTER);
+          if (currentStoryHasWorldContext) {
+            p.text('🌍 World Event Active', statusX + 25, statusY + 15);
+          } else {
+            p.text('🌍 World Monitoring', statusX + 25, statusY + 15);
+          }
+        }
 
         function drawLanguageDropdown() {
           let buttonX = p.width - 160;
@@ -1664,6 +1797,8 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           if (isGeneratingStory) return;
           isGeneratingStory = true;
           
+          console.log(`🐍 Generating story for activity: ${currentActivity} (previous: ${previousActivity})`);
+          
           try {
             const response = await fetch('/api/generate-story', {
               method: 'POST',
@@ -1677,12 +1812,17 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                 language: selectedLanguage
               })
             });
-
+            
             if (response.ok) {
               const data = await response.json();
               if (data.story) {
-                showStory(data.story);
+                showStory(data.story, data.hasWorldContext, data.worldEvent);
                 console.log('Generated story:', data.story);
+                if (data.hasWorldContext) {
+                  console.log('🌍 WORLD-AWARE THOUGHT! Event:', data.worldEvent);
+                } else {
+                  console.log('💭 Pure existential thought (no world context)');
+                }
               }
             } else {
               console.error('Story generation failed:', response.status);
@@ -1702,10 +1842,14 @@ export default function DigitalOrganism({ className = '' }: { className?: string
           return 'nocturnal';
         }
 
-        function showStory(story: string) {
+        function showStory(story: string, hasWorldContext = false, worldEvent = null) {
           currentStoryText = story;
-          storyOpacity = 255;
-          tickerX = p.width;
+          storyOpacity = 0; // Start with opacity 0 for fade in
+          storyStartTime = p.millis(); // Record when the story started
+          
+          // Store world context info for visual indicator
+          currentStoryHasWorldContext = hasWorldContext;
+          currentWorldEvent = worldEvent;
         }
 
         function checkSelfIntersection() {
@@ -1994,28 +2138,28 @@ export default function DigitalOrganism({ className = '' }: { className?: string
         }
 
         function createGlowTrail(x: number, y: number, speed: number, glow: number) {
-          // Create trail particles based on movement speed and glow - more subtle
-          let trailIntensity = p.map(speed, 4, 15, 0.2, 0.6); // Reduced intensity
-          let numParticles = Math.floor(speed * 0.3) + 1; // Fewer particles
+          // Create trail particles based on movement speed and glow - much more subtle
+          let trailIntensity = p.map(speed, 4, 15, 0.05, 0.15); // Much more subtle intensity
+          let numParticles = Math.floor(speed * 0.1) + 1; // Significantly fewer particles
           
           for (let i = 0; i < numParticles; i++) {
             // Add some randomness to particle position
-            let offsetX = p.random(-5, 5);
-            let offsetY = p.random(-5, 5);
+            let offsetX = p.random(-3, 3);
+            let offsetY = p.random(-3, 3);
             
             glowTrailParticles.push({
               x: x + offsetX,
               y: y + offsetY,
               life: 1.0,
-              maxLife: p.map(glow, 0, 3, 20, 50), // Shorter, more subtle life
-              size: p.map(speed, 4, 15, 2, 5), // Smaller particles
-              glow: glow * trailIntensity * 0.7, // Reduced glow intensity
-              fadeRate: p.map(speed, 4, 15, 0.03, 0.02) // Faster fade for more subtle effect
+              maxLife: p.map(glow, 0, 3, 10, 20), // Much shorter life
+              size: p.map(speed, 4, 15, 1, 2), // Much smaller particles
+              glow: glow * trailIntensity * 0.2, // Much more subtle glow
+              fadeRate: p.map(speed, 4, 15, 0.1, 0.08) // Much faster fade
             });
           }
           
-          // Limit number of trail particles
-          while (glowTrailParticles.length > maxTrailParticles) {
+          // Limit number of trail particles to fewer
+          while (glowTrailParticles.length > 15) { // Reduce max particles
             glowTrailParticles.shift();
           }
         }
