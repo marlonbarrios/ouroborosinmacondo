@@ -1690,13 +1690,13 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               p.fill(0, 0, 0, storyOpacity * 0.9);
               p.text(currentStoryText, p.width/2 + 3, p.height - 60 + 3);
               
-              // Draw main text - enhanced colors based on world context
-              if (currentStoryHasWorldContext) {
-                p.fill(150, 255, 150, storyOpacity); // Brighter green for world-aware thoughts
-              } else {
-                p.fill(255, 255, 255, storyOpacity); // Pure white for existential thoughts
-              }
-              p.text(currentStoryText, p.width/2, p.height - 60);
+               // Draw main text - more subtle colors based on world context
+               if (currentStoryHasWorldContext) {
+                 p.fill(120, 200, 120, storyOpacity); // Muted green for world-aware thoughts
+               } else {
+                 p.fill(220, 220, 220, storyOpacity * 0.8); // Much more subtle white for existential thoughts
+               }
+               p.text(currentStoryText, p.width/2, p.height - 60);
             }
           }
         }
@@ -1738,29 +1738,29 @@ export default function DigitalOrganism({ className = '' }: { className?: string
            let statusWidth = 180;
            let statusHeight = 30;
            
-           // Background for status with subtle border
+           // Background for status with very subtle border
            p.noFill();
-           p.stroke(255, 255, 255, 60);
-           p.strokeWeight(1);
+           p.stroke(180, 180, 180, 30); // Much more subtle border
+           p.strokeWeight(0.5); // Thinner border
            p.rect(statusX, statusY, statusWidth, statusHeight, 5);
            
            p.noStroke();
-           p.fill(0, 0, 0, 120);
+           p.fill(0, 0, 0, 80); // More transparent background
            p.rect(statusX, statusY, statusWidth, statusHeight, 5);
            
-           // Status indicator - subtle dot
+           // Status indicator - very subtle dot
            if (currentStoryHasWorldContext) {
-             // Active world event - steady green
-             p.fill(120, 200, 120, 255);
+             // Active world event - muted green
+             p.fill(100, 160, 100, 180); // More muted
            } else {
-             // Monitoring but no current event - dim gray
-             p.fill(120, 120, 120, 150);
+             // Monitoring but no current event - very dim gray
+             p.fill(100, 100, 100, 100); // Much more subtle
            }
-           p.circle(statusX + 12, statusY + 15, 6);
+           p.circle(statusX + 12, statusY + 15, 4); // Smaller dot
            
-           // Status text - clean typography
-           p.fill(255, 255, 255, 200);
-           p.textSize(11);
+           // Status text - more subtle typography
+           p.fill(200, 200, 200, 150); // More subtle text
+           p.textSize(10); // Smaller text
            p.textAlign(p.LEFT, p.CENTER);
            if (currentStoryHasWorldContext) {
              p.text('WORLD EVENT ACTIVE', statusX + 22, statusY + 15);
@@ -2001,10 +2001,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               effect.life *= 0.95;
               
               p.push();
-              p.noFill();
-              p.strokeWeight(2);
-              p.stroke(255, 255, 255, effect.life * 255);
-              p.circle(effect.x, effect.y, effect.radius * 2);
+            p.noFill();
+            p.strokeWeight(1); // Thinner stroke
+            p.stroke(200, 210, 220, effect.life * 120); // Much more subtle white
+            p.circle(effect.x, effect.y, effect.radius * 1.2); // Smaller radius
               p.pop();
               
             } else if (effect.type === 'particle') {
@@ -2131,11 +2131,11 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               particle.radius += (particle.maxRadius - particle.radius) * 0.1;
               particle.alpha *= 0.95;
               
-              // Draw expanding ring
-              p.noFill();
-              p.stroke(255, 255, 255, particle.alpha);
-              p.strokeWeight(2);
-              p.circle(particle.x, particle.y, particle.radius * 2);
+            // Draw expanding ring - much more subtle
+            p.noFill();
+            p.stroke(200, 200, 200, particle.alpha * 0.3); // Much more subtle white
+            p.strokeWeight(1); // Thinner stroke
+            p.circle(particle.x, particle.y, particle.radius * 1.5); // Smaller radius
               
               // Remove faded particles
               if (particle.alpha < 5) {
@@ -2151,10 +2151,10 @@ export default function DigitalOrganism({ className = '' }: { className?: string
               let ring = (window as any).digestionRings[i];
               
               // Draw expanding ring
-              p.noFill();
-              p.stroke(220, 240, 255, ring.alpha);
-              p.strokeWeight(2);
-              p.circle(ring.x, ring.y, ring.radius * 2);
+            p.noFill();
+            p.stroke(180, 200, 220, ring.alpha * 0.4); // Much more subtle blue-white
+            p.strokeWeight(1); // Thinner stroke
+            p.circle(ring.x, ring.y, ring.radius * 1.2); // Much smaller radius
               
               // Update ring
               ring.radius += (ring.maxRadius - ring.radius) * 0.1;
@@ -2215,20 +2215,20 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             p.push();
             p.translate(particle.x, particle.y);
             
-            // Multiple glow layers for better effect
-            for (let layer = 3; layer > 0; layer--) {
-              let layerSize = glowSize * layer * 0.8;
+            // Multiple glow layers for better effect - much more minimal
+            for (let layer = 2; layer > 0; layer--) { // Fewer layers
+              let layerSize = glowSize * layer * 0.4; // Much smaller
               let layerAlpha = (alpha / layer) * particle.glow;
               
-              // Use pearl color for the trail - more subtle
-              p.fill(240, 243, 245, layerAlpha * 0.2); // Reduced alpha
+              // Use very subtle pearl color for the trail
+              p.fill(220, 225, 230, layerAlpha * 0.08); // Much more subtle
               p.noStroke();
               p.circle(0, 0, layerSize);
             }
             
-            // Bright core - more subtle
-            p.fill(255, 255, 255, alpha * particle.glow * 0.4); // Reduced alpha
-            p.circle(0, 0, particle.size);
+            // Bright core - very minimal
+            p.fill(230, 235, 240, alpha * particle.glow * 0.15); // Much more subtle core
+            p.circle(0, 0, particle.size * 0.6); // Smaller core
             
             p.pop();
           }
@@ -2351,15 +2351,16 @@ export default function DigitalOrganism({ className = '' }: { className?: string
             let g = p.green(nutrient.color);
             let b = p.blue(nutrient.color);
             
-            for (let j = 4; j > 0; j--) {
-              let glowSize = nutrient.size * j * 1.5;
-              let glowAlpha = (nutrient.opacity * 255) / (j * 1.5);
+            // Much more subtle glow effect for nutrients
+            for (let j = 2; j > 0; j--) { // Fewer glow layers
+              let glowSize = nutrient.size * j * 0.8; // Smaller glow
+              let glowAlpha = (nutrient.opacity * 120) / (j * 2); // Much more subtle
               p.fill(r, g, b, glowAlpha);
               p.circle(nutrient.x, nutrient.y, glowSize);
             }
             
-            p.fill(r, g, b, nutrient.opacity * 255);
-            p.circle(nutrient.x, nutrient.y, nutrient.size);
+            p.fill(r, g, b, nutrient.opacity * 180); // Less bright core
+            p.circle(nutrient.x, nutrient.y, nutrient.size * 0.8); // Smaller core
             
             nutrient.x += p.sin(p.frameCount * 0.03 + i) * 0.5;
             nutrient.y += p.cos(p.frameCount * 0.03 + i) * 0.5;
