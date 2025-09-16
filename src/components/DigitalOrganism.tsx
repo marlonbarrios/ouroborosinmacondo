@@ -1644,14 +1644,43 @@ export default function DigitalOrganism({ className = '' }: { className?: string
                 let pulseSize = 15 + p.sin(p.millis() * 0.01) * 5;
                 p.ellipse(35, p.height - 70, pulseSize, pulseSize);
                 
-                // Show the actual world event description
+                // Show the actual world event description - FULL TITLE
                 if (currentWorldEvent) {
                   p.fill(150, 255, 150, storyOpacity * 0.7);
                   p.textSize(14);
                   p.textAlign(p.LEFT, p.CENTER);
-                  let eventText = currentWorldEvent.length > 60 ? 
-                    currentWorldEvent.substring(0, 60) + "..." : currentWorldEvent;
-                  p.text(`Event: ${eventText}`, 20, p.height - 30);
+                  
+                  // Display the complete event title without truncation
+                  let fullEventText = `Event: ${currentWorldEvent}`;
+                  let maxWidth = p.width - 40; // Leave 20px margin on each side
+                  
+                  // Check if text fits on one line
+                  p.textSize(14);
+                  if (p.textWidth(fullEventText) <= maxWidth) {
+                    // Single line - display normally
+                    p.text(fullEventText, 20, p.height - 30);
+                  } else {
+                    // Multi-line - wrap text to show full title
+                    let words = fullEventText.split(' ');
+                    let lines = [];
+                    let currentLine = '';
+                    
+                    for (let word of words) {
+                      let testLine = currentLine + (currentLine ? ' ' : '') + word;
+                      if (p.textWidth(testLine) <= maxWidth) {
+                        currentLine = testLine;
+                      } else {
+                        if (currentLine) lines.push(currentLine);
+                        currentLine = word;
+                      }
+                    }
+                    if (currentLine) lines.push(currentLine);
+                    
+                    // Draw each line
+                    for (let i = 0; i < lines.length; i++) {
+                      p.text(lines[i], 20, p.height - 45 + (i * 16));
+                    }
+                  }
                 }
               }
               
